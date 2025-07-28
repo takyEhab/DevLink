@@ -1,0 +1,25 @@
+@import "tailwindcss";
+.devlink-logo {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.devlink-logo .dev {
+  color: #58a6ff;
+}
+
+.devlink-logo .dot {
+  color: #8b949e;
+  margin: 0 1px;
+}
+
+.devlink-logo .link {
+  color: #c9d1d9;
+}
