@@ -1,7 +1,4 @@
 const errorMiddleware = (err, req, res, next) => {
-  // Log the full error
-  console.error(err);
-
   // Clone the original error
   let statusCode = err.statusCode || 500;
   let message = err.message || "Server Error";
@@ -21,8 +18,22 @@ const errorMiddleware = (err, req, res, next) => {
   // Mongoose: validation error
   if (err.name === "ValidationError") {
     statusCode = 400;
-    message = Object.values(err.errors).map((val) => val.message).join(", ");
+    // Extracts all individual validation error messages from Mongoose's ValidationError object,
+    // maps them into a simple array of strings, then joins them into a single comma-separated message.
+    //{
+    //   errors: {
+    //     email: { message: 'Email is invalid' },
+    //     password: { message: 'Password is too short' }
+    //   }
+    //}
+    // into: "Email is invalid, Password is too short"
+    message = Object.values(err.errors)
+      .map((val) => val.message)
+      .join(", ");
   }
+
+  // Log the full error
+  console.error(statusCode);
 
   res.status(statusCode).json({
     success: false,
@@ -31,41 +42,3 @@ const errorMiddleware = (err, req, res, next) => {
 };
 
 export default errorMiddleware;
-
-// const errorMiddleware = (err, req, res, next) => {
-//   try {
-//     let error = { ...err };
-//     error.message = err.message;
-//     console.error(err);
-
-//     //mongoose bad objectID
-//     if (err.name === "castError") {
-//       const message = "resource not found";
-//       error = new Error(message);
-//       error.statusCode(404);
-//     }
-
-//     //mongoose duplicate key
-//     if (error.code === 11000) {
-//       const message = "duplicate field value entered";
-//       error = new Error(message);
-//       error.statusCode(400);
-//     }
-
-//     //mongoose validation error
-//     if (err.name === "ValidationError") {
-//       const message = Object.values(err.errors).map((val) => val.message);
-//       error = new Error(message.join(", "));
-//       error.statusCode(400);
-//     }
-//     res
-//       .status(error.statusCode || 500)
-//       .json({ success: false, error: error.message || "server error" });
-//   } catch (error) {
-//     // console.log(error);
-//     // console.log(error.message);
-//     next(error);
-//   }
-// };
-
-// export default errorMiddleware;
