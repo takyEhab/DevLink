@@ -19,7 +19,7 @@ export default function Layout() {
   return (
     <>
       {!hideNavbar && <Header />}
-      <ToastContainer />
+      <ToastContainer theme="dark"  />
       <Outlet />
     </>
   );

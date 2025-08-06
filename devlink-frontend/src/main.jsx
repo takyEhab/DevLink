@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import FindDevelopers from "./pages/FindDevelopers";
 import DeveloperProfile from "./pages/DeveloperProfile";
 import Chat from "./components/chat-ui";
+import NotFound from "./pages/NotFound";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { path: "find-dev", element: <FindDevelopers /> },
       { path: "developer/:name", element: <DeveloperProfile /> },
       { path: "messages", element: <Chat /> },
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);
