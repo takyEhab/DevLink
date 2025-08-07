@@ -6,7 +6,9 @@ import { ToastContainer } from "react-toastify";
 
 export default function Layout() {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/login"; // or ['/login', '/register'].includes()
+  const hideNavbar = location.pathname === "/auth"; 
+  // for multiple routes
+  // or ['/login', '/register'].includes()
   const { loading } = useContext(UserContext);
 
   if (loading)
