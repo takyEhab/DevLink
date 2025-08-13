@@ -167,7 +167,7 @@ const Login = ({ onSwitchToSignup }) => {
     try {
       // send call to my api
       // const res = await axios.post(
-      //   "http://localhost:3000/api/auth/login/",
+      //   "http://localhost:3000/api/login/",
       //   {
       //     email: formData.email,
       //     password: formData.password,
@@ -335,11 +335,10 @@ const Login = ({ onSwitchToSignup }) => {
 // Signup Component
 const Signup = ({ onSwitchToLogin, onSignup }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
     name: "",
@@ -347,15 +346,14 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
     password: "",
 
     // Step 2: Optional Profile Info
-    title: "",
-    location: "",
-    primarySkills: "",
-    secondarySkills: "",
-    bio: "",
-    portfolio: "",
-    github: "",
-    linkedin: "",
-  })
+    title: "Frontend dev",
+    location: "Cairo, Egypt",
+    primarySkills: "HTML, CSS",
+    bio: "Frontend Developer | JavaScript Enthusiast",
+    portfolio: "https://myprotfolio.com",
+    github: "https://github.com/takyEhab",
+    linkedIn: "https://www.linkedin.com/in/taky-gad",
+  });
   const navigate = useNavigate();
 
   const validateStep1 = () => {
@@ -384,6 +382,21 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
   const validateStep2 = () => {
     const newErrors = {};
 
+    if (!formData.title) {
+      newErrors.title = "Professional title is required";
+    }
+    if (!formData.location) {
+      newErrors.location = "Location is required";
+    }
+
+    if (!formData.primarySkills) {
+      newErrors.primarySkills = "Primary skills is required";
+    }
+
+    if (!formData.bio) {
+      newErrors.bio = "Professional Bio is required";
+    }
+
     if (formData.portfolio && !/^https?:\/\/.+/.test(formData.portfolio)) {
       newErrors.portfolio =
         "Please enter a valid URL (starting with http:// or https://)";
@@ -406,7 +419,6 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGeneralError("");
-    setSuccessMessage("");
     setErrors({});
 
     if (currentStep === 1) {
@@ -420,7 +432,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
 
       try {
         const res = await axios.post(
-          "http://localhost:3000/api/auth/register/",
+          "http://localhost:3000/api/users/register/",
           {
             email: formData.email,
             name: formData.name,
@@ -430,24 +442,10 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
             withCredentials: true, // ✅ sends cookies
           }
         );
-        console.log(res.data);
-        if (res.data.success) setSuccessMessage(res.data.message);
-
-        // // Simulate email check
-        // await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // // Simulate email already exists check
-        // if (formData.email === "existing@example.com") {
-        //   setErrors({ email: "An account with this email already exists" });
-        //   return;
-        // }
-
-        // setSuccessMessage("Basic information validated successfully!");
-        // setTimeout(() => {
-        //   setSuccessMessage("");
-        // //   setCurrentStep(2);
-        // }, 1000);
-        // setCurrentStep(2);
+        if (res.data.success) {
+          toast.success(res.data.message);
+        }
+        setCurrentStep(2);
       } catch (error) {
         console.log(error.response);
 
@@ -469,14 +467,10 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
       setIsLoading(true);
 
       try {
-        // Simulate account creation
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // // Simulate account creation
+        // await new Promise((resolve) => setTimeout(resolve, 1500));
 
         const userData = {
-          name: formData.name,
-          email: formData.email,
-          avatar:
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face",
           title: formData.title || "Developer",
           location: formData.location || "Remote",
           bio:
@@ -488,41 +482,39 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                 .map((skill) => skill.trim())
                 .filter(Boolean)
             : ["JavaScript", "React", "CSS"],
+          portfolio: formData.portfolio,
+          github: formData.github,
+          linkedIn: formData.linkedIn,
         };
 
-        onSignup(userData);
+        let res = await axios.post(
+          "http://localhost:3000/api/profile/",
+          userData,
+          {
+            withCredentials: true, // ✅ sends cookies
+          }
+        );
+        res = res.data;
+        if (res.success) {
+          toast.success(res.message);
+          return navigate(`/developer/${res.data.profile.user.name}`);
+        }
+        navigate("/");
       } catch (error) {
-        setGeneralError("Failed to add account info. Please try again.");
+        const errorMessage =
+          error.response?.data?.error ||
+          "Failed to add account info. Please try again.";
+        setGeneralError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
     }
   };
+  // `/developer/${formData.name ? formData.name : "taky"}`
 
   const handleSkip = async () => {
-    setIsLoading(true);
-    setGeneralError("");
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const userData = {
-        name: formData.name,
-        email: formData.email,
-        avatar:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face",
-        title: "Developer",
-        location: "Remote",
-        bio: "New to the platform and excited to work on amazing projects!",
-        skills: ["JavaScript", "React", "CSS"],
-      };
-
-      onSignup(userData);
-    } catch (error) {
-      setGeneralError("Failed to create account. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    navigate("/");
   };
 
   const handleChange = (e) => {
@@ -540,9 +532,8 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
       }));
     }
 
-    // Clear general error and success message
+    // Clear general error
     if (generalError) setGeneralError("");
-    if (successMessage) setSuccessMessage("");
   };
 
   const goBack = () => {
@@ -552,7 +543,6 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
       setCurrentStep(1);
       setErrors({});
       setGeneralError("");
-      setSuccessMessage("");
     }
   };
 
@@ -607,9 +597,6 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
           {/* Alerts */}
           {generalError && (
             <ErrorAlert message={generalError} className="mb-6" />
-          )}
-          {successMessage && (
-            <SuccessAlert message={successMessage} className="mb-6" />
           )}
 
           {/* Form */}
@@ -715,7 +702,9 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                     value={formData.title}
                     onChange={handleChange}
                     disabled={isLoading}
+                    error={!!errors.title}
                   />
+                  <FieldError error={errors.title} />
                 </div>
 
                 <div>
@@ -727,7 +716,9 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                     value={formData.location}
                     onChange={handleChange}
                     disabled={isLoading}
+                    error={!!errors.location}
                   />
+                  <FieldError error={errors.title} />
                 </div>
 
                 <div>
@@ -746,23 +737,6 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                   <FieldError error={errors.primarySkills} />
                   <p className="text-xs text-gray-500 mt-1">
                     List your strongest technical skills (max 10)
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="secondarySkills">
-                    Secondary Skills (comma-separated)
-                  </Label>
-                  <Input
-                    id="secondarySkills"
-                    name="secondarySkills"
-                    placeholder="AWS, Docker, GraphQL"
-                    value={formData.secondarySkills}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Additional skills you're familiar with
                   </p>
                 </div>
 
@@ -823,43 +797,13 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                         id="linkedin"
                         name="linkedin"
                         placeholder="linkedin.com/in/you"
-                        value={formData.linkedin}
+                        value={formData.linkedIn}
                         onChange={handleChange}
                         className="pl-10"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
-                </div>
-
-                {/* Terms and Conditions */}
-                <div>
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id="agreeToTerms"
-                      name="agreeToTerms"
-                      checked={formData.agreeToTerms}
-                      onChange={handleChange}
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor="agreeToTerms" className="text-sm leading-5">
-                      I agree to the{" "}
-                      <button
-                        type="button"
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        Terms of Service
-                      </button>{" "}
-                      and{" "}
-                      <button
-                        type="button"
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        Privacy Policy
-                      </button>
-                    </Label>
-                  </div>
-                  <FieldError error={errors.agreeToTerms} />
                 </div>
               </>
             )}

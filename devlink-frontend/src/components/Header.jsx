@@ -1,5 +1,4 @@
 import {
-  Search,
   Bell,
   Settings,
   User,
@@ -88,7 +87,7 @@ const Header = () => {
 
   const handleProfileClick = () => {
     setUserMenuOpen(false);
-    navigate(`/profile/${user.name}`);
+    navigate(`/developer/${user.name}`);
   };
 
   const handleLogoutClick = async () => {
@@ -136,16 +135,8 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                {/* Search Bar - Compact */}
-                <div className="hidden lg:flex relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Search developers..."
-                    className="pl-10 w-64 h-9 text-sm bg-gray-700/50 border-gray-600/50 focus:bg-gray-700"
-                  />
-                </div>
-
                 {/* Notifications */}
+                {/* test  */}
                 <div className="relative">
                   <Button variant="ghost" size="sm" className="relative p-2">
                     <Bell className="w-5 h-5" />
@@ -186,11 +177,11 @@ const Header = () => {
                     </div>
                     <div className="text-xs text-gray-400">{user.email}</div>
                   </div>
+
                   <DropdownItem onClick={handleProfileClick}>
                     <User className="w-4 h-4 mr-3" />
                     My Profile
                   </DropdownItem>
-
                   <div className="border-t border-gray-700 mt-1 pt-1">
                     <DropdownItem
                       onClick={handleLogoutClick}
