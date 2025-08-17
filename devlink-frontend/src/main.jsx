@@ -17,8 +17,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "auth", element: <Auth /> },
-      { path: "find-dev", element: <FindDevelopers /> },
-      { path: "developer/:name", element: <DeveloperProfile /> },
+      { path: "developers", element: <FindDevelopers /> },
+      { path: "developer/:id", element: <DeveloperProfile /> },
       { path: "messages", element: <Chat /> },
       { path: "*", element: <NotFound /> },
     ],

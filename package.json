@@ -1,0 +1,10 @@
+{
+  "name": "devlink",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix devlink-backend\" \"npm run dev --prefix devlink-frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -350,6 +350,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
     location: "Cairo, Egypt",
     primarySkills: "HTML, CSS",
     bio: "Frontend Developer | JavaScript Enthusiast",
+    education: "Business , Alexandria University",
     portfolio: "https://myprotfolio.com",
     github: "https://github.com/takyEhab",
     linkedIn: "https://www.linkedin.com/in/taky-gad",
@@ -476,6 +477,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
           bio:
             formData.bio ||
             "New to the platform and excited to work on amazing projects!",
+          education: formData.education,
           skills: formData.primarySkills
             ? formData.primarySkills
                 .split(",")
@@ -495,11 +497,12 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
           }
         );
         res = res.data;
+        console.log(res);
         if (res.success) {
           toast.success(res.message);
-          return navigate(`/developer/${res.data.profile.user.name}`);
+          // return navigate(`/developer/${res.data.profile.user._id}`);
         }
-        navigate("/");
+        // navigate("/");
       } catch (error) {
         const errorMessage =
           error.response?.data?.error ||
@@ -756,6 +759,21 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                   <p className="text-xs text-gray-500 mt-1">
                     {formData.bio.length}/500 characters
                   </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="education">Education</Label>
+                  <Textarea
+                    id="education"
+                    name="education"
+                    placeholder="e.g. Business, Alexandria University"
+                    value={formData.education}
+                    onChange={handleChange}
+                    rows={3}
+                    error={!!errors.education}
+                    disabled={isLoading}
+                  />
+                  <FieldError error={errors.education} />
                 </div>
 
                 <div>

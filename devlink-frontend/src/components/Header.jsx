@@ -87,7 +87,8 @@ const Header = () => {
 
   const handleProfileClick = () => {
     setUserMenuOpen(false);
-    navigate(`/developer/${user.name}`);
+    
+    navigate(`/developer/${user._id}`);
   };
 
   const handleLogoutClick = async () => {
@@ -115,7 +116,7 @@ const Header = () => {
             {user && (
               <nav className="hidden md:flex items-center space-x-6">
                 <Link
-                  to="/find-dev"
+                  to="/developers"
                   className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
                 >
                   Developers

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import {
   Star,
   MapPin,
@@ -29,6 +29,9 @@ import {
 import { Link, useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
+import Loading from "../components/Loading";
+import DeveloperNotFound from "./DeveloperNotFound";
+import axios from "axios";
 
 // Enhanced UI components with custom styling
 const Button = ({
@@ -142,11 +145,9 @@ const developerData = {
   languages: ["English", "Spanish"],
   education: "BS Computer Science, Stanford University",
   bio: "I'm a seasoned full-stack developer with a passion for creating innovative digital solutions. With over 8 years of experience in the tech industry, I've worked with startups and enterprise companies to build scalable, high-performance applications. My expertise spans the entire development stack, from frontend frameworks like React and Vue.js to backend technologies like Node.js and Python. I'm particularly skilled in cloud architecture and DevOps practices, having deployed applications on AWS, Google Cloud, and Azure. I believe in writing clean, maintainable code and following best practices to ensure long-term project success.",
-  socialLinks: {
-    github: "https://github.com/sarahjohnson",
-    linkedin: "https://linkedin.com/in/sarahjohnson",
-    portfolio: "https://sarahjohnson.dev",
-  },
+  github: "https://github.com/sarahjohnson",
+  linkedin: "https://linkedin.com/in/sarahjohnson",
+  portfolio: "https://sarahjohnson.dev",
   recentProjects: [
     {
       id: 1,
@@ -191,96 +192,75 @@ const developerData = {
       client: "FinTech Pro",
     },
   ],
-  testimonials: [
-    {
-      id: 1,
-      client: "Alex Chen",
-      company: "TechStart Inc.",
-      avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      text: "Sarah delivered our e-commerce platform ahead of schedule and exceeded all our expectations. Her attention to detail and technical expertise are outstanding.",
-      date: "2024-01-15",
-    },
-    {
-      id: 2,
-      client: "Maria Rodriguez",
-      company: "DataFlow Solutions",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      text: "Working with Sarah was a pleasure. She understood our requirements perfectly and delivered a solution that perfectly fits our business needs.",
-      date: "2023-12-20",
-    },
+};
+
+const objForEdit = {
+  name: "Sarah Johnson",
+  title: "Senior Full Stack Developer",
+  location: "San Francisco, CA",
+  bio: "I'm a seasoned full-stack developer with a passion for creating innovative digital solutions. With over 8 years of experience in the tech industry, I've worked with startups and enterprise companies to build scalable, high-performance applications. My expertise spans the entire development stack, from frontend frameworks like React and Vue.js to backend technologies like Node.js and Python. I'm particularly skilled in cloud architecture and DevOps practices, having deployed applications on AWS, Google Cloud, and Azure. I believe in writing clean, maintainable code and following best practices to ensure long-term project success.",
+  experience: "8+ years",
+  education: "BS Computer Science, Stanford University",
+  skills: [
+    "React",
+    "Node.js",
+    "TypeScript",
+    "AWS",
+    "MongoDB",
+    "Docker",
+    "Python",
+    "Vue.js",
+    "PostgreSQL",
+    "Redis",
+    "GraphQL",
+    "Kubernetes",
   ],
-  certifications: [
-    {
-      name: "AWS Certified Solutions Architect",
-      issuer: "Amazon Web Services",
-      date: "2023",
-      badge:
-        "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=80&h=80&fit=crop",
-    },
-    {
-      name: "Google Cloud Professional Developer",
-      issuer: "Google",
-      date: "2023",
-      badge:
-        "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=80&h=80&fit=crop",
-    },
-  ],
+
+  github: "https://github.com/sarahjohnson",
+  linkedin: "https://linkedin.com/in/sarahjohnson",
+  portfolio: "https://sarahjohnson.dev",
 };
 
 const DeveloperProfile = () => {
-  const { name } = useParams();
+  const { id } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [isSaving, setIsSaving] = useState(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: "Sarah Johnson",
-    title: "Senior Full Stack Developer",
-    location: "San Francisco, CA",
-    bio: "I'm a seasoned full-stack developer with a passion for creating innovative digital solutions. With over 8 years of experience in the tech industry, I've worked with startups and enterprise companies to build scalable, high-performance applications. My expertise spans the entire development stack, from frontend frameworks like React and Vue.js to backend technologies like Node.js and Python. I'm particularly skilled in cloud architecture and DevOps practices, having deployed applications on AWS, Google Cloud, and Azure. I believe in writing clean, maintainable code and following best practices to ensure long-term project success.",
-    experience: "8+ years",
-    education: "BS Computer Science, Stanford University",
-    languages: ["English", "Spanish"],
-    skills: [
-      "React",
-      "Node.js",
-      "TypeScript",
-      "AWS",
-      "MongoDB",
-      "Docker",
-      "Python",
-      "Vue.js",
-      "PostgreSQL",
-      "Redis",
-      "GraphQL",
-      "Kubernetes",
-    ],
-    specialties: [
-      "E-commerce",
-      "SaaS",
-      "API Development",
-      "Cloud Architecture",
-      "Microservices",
-      "DevOps",
-    ],
-    socialLinks: {
-      github: "https://github.com/sarahjohnson",
-      linkedin: "https://linkedin.com/in/sarahjohnson",
-      twitter: "https://twitter.com/sarahjohnson",
-      portfolio: "https://sarahjohnson.dev",
-    },
-  });
-
+  const [loading, setLoading] = useState(true);
+  const { user } = useContext(UserContext);
+  const [editForm, setEditForm] = useState({});
+  const [myDeveloper, setMyDeveloper] = useState(null);
   // Get current user from context
-  const currentUser = useContext(UserContext);
-  const isOwnProfile = currentUser?.user?.name === name;
 
-  // In a real app, you would fetch developer data based on the ID
-  const developer = developerData;
+  useEffect(() => {
+    async function fetchDeveloper() {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/profile/user/${id}`
+        );
+        const data = res.data;
+        setMyDeveloper(data.data.profile);
+        const newEditForm = {
+          ...data.data.profile,
+          name: data.data.profile.user.name,
+        };
+        setEditForm(newEditForm);
+        // setDeveloper(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false); // runs only after fetch finishes
+      }
+    }
+
+    fetchDeveloper();
+  }, [id]);
+
+  const isOwnProfile = user?._id === id;
+
+  let developer = { ...developerData, ...myDeveloper };
 
   const tabs = [
     { id: "overview", label: "Overview", icon: Users },
@@ -291,15 +271,22 @@ const DeveloperProfile = () => {
     try {
       setIsSaving(true);
 
-      // simulate async call or actual backend request here
-      console.log(editForm);
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // example delay
+      let res = await axios.post(
+        "http://localhost:3000/api/profile/",
+        editForm,
+        {
+          withCredentials: true, // ✅ sends cookies
+        }
+      );
 
+      const data = res.data;
+
+      console.log(data);
       toast.success("Profile updated!");
-      setIsEditMode(false);
+      // setIsEditMode(false);
     } catch (error) {
       toast.error("Failed to save changes.");
-      console.error(error);
+      console.log(error);
     } finally {
       setIsSaving(false);
     }
@@ -322,6 +309,12 @@ const DeveloperProfile = () => {
     }
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+  if (!myDeveloper) {
+    return <DeveloperNotFound />;
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Animated Background */}
@@ -336,7 +329,7 @@ const DeveloperProfile = () => {
         {/* Back Button */}
         <div className="container mx-auto px-4 py-6">
           <Link
-            to={isOwnProfile ? "/" : "/find-dev"}
+            to={isOwnProfile ? "/" : "/developers"}
             className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -371,7 +364,7 @@ const DeveloperProfile = () => {
                   developer.avatar ||
                   "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face"
                 }
-                alt={developer.name}
+                alt={developer.user.name}
                 className="w-32 h-32 md:w-40 md:h-40 rounded-2xl border-4 border-slate-800 shadow-2xl"
                 onError={(e) => {
                   e.target.src =
@@ -386,7 +379,7 @@ const DeveloperProfile = () => {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl md:text-4xl font-bold text-white">
-                      {developer.name}
+                      {developer.user.name}
                     </h1>
                     {isOwnProfile && (
                       <Badge variant="success" className="text-xs">
@@ -486,12 +479,12 @@ const DeveloperProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-slate-300">
                   <Mail className="w-4 h-4" />
-                  <span>sarah.johnson@email.com</span>
+                  <span>{developer.user.email}</span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-300">
                   <Globe className="w-4 h-4" />
                   <a
-                    href={developer.socialLinks.portfolio}
+                    href={developer.portfolio}
                     className="text-emerald-400 hover:text-emerald-300"
                   >
                     Portfolio
@@ -503,13 +496,13 @@ const DeveloperProfile = () => {
               <div className="mt-4 pt-4 border-t border-slate-700">
                 <div className="flex gap-3">
                   <a
-                    href={developer.socialLinks.github}
+                    href={developer.github}
                     className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
                   >
                     <Github className="w-5 h-5 text-white" />
                   </a>
                   <a
-                    href={developer.socialLinks.linkedin}
+                    href={developer.linkedin}
                     className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
                   >
                     <Linkedin className="w-5 h-5 text-white" />
@@ -688,7 +681,6 @@ const DeveloperProfile = () => {
                   ))}
                 </div>
               )}
-
             </div>
           </div>
         </div>
@@ -755,6 +747,21 @@ const DeveloperProfile = () => {
                     placeholder="e.g., San Francisco, CA"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Education
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.education}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, education: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="e.g., San Francisco, CA"
+                  />
+                </div>
               </div>
 
               {/* Bio */}
@@ -763,9 +770,9 @@ const DeveloperProfile = () => {
                   Bio
                 </label>
                 <textarea
-                  value={editForm.longBio}
+                  value={editForm.bio}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, longBio: e.target.value })
+                    setEditForm({ ...editForm, bio: e.target.value })
                   }
                   rows={5}
                   className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -794,27 +801,6 @@ const DeveloperProfile = () => {
                 />
               </div>
 
-              {/* Specialties */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Specialties (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={editForm.specialties.join(", ")}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      specialties: e.target.value
-                        .split(", ")
-                        .filter((specialty) => specialty.trim()),
-                    })
-                  }
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="E-commerce, SaaS, API Development..."
-                />
-              </div>
-
               {/* Social Links */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -823,14 +809,11 @@ const DeveloperProfile = () => {
                   </label>
                   <input
                     type="url"
-                    value={editForm.socialLinks.github}
+                    value={editForm.github}
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        socialLinks: {
-                          ...editForm.socialLinks,
-                          github: e.target.value,
-                        },
+                        github: e.target.value,
                       })
                     }
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -843,14 +826,11 @@ const DeveloperProfile = () => {
                   </label>
                   <input
                     type="url"
-                    value={editForm.socialLinks.linkedin}
+                    value={editForm.linkedIn}
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        socialLinks: {
-                          ...editForm.socialLinks,
-                          linkedin: e.target.value,
-                        },
+                        linkedIn: e.target.value,
                       })
                     }
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -863,14 +843,11 @@ const DeveloperProfile = () => {
                   </label>
                   <input
                     type="url"
-                    value={editForm.socialLinks.portfolio}
+                    value={editForm.portfolio}
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        socialLinks: {
-                          ...editForm.socialLinks,
-                          portfolio: e.target.value,
-                        },
+                        portfolio: e.target.value,
                       })
                     }
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -889,14 +866,7 @@ const DeveloperProfile = () => {
                 >
                   Cancel
                 </Button>
-                {/* <Button
-                  variant="success"
-                  onClick={saveChanges}
-                  className="flex-1"
-                >
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                  Save Changes
-                </Button> */}
+
                 <Button
                   variant="success"
                   onClick={saveChanges}

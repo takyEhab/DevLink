@@ -29,7 +29,7 @@ export const getMyProfile = async (req, res, next) => {
 // @access  Private
 export const createOrUpdateProfile = async (req, res, next) => {
   try {
-    const { title, location, bio, skills } = req.body;
+    const { title, location, bio, skills, education } = req.body;
 
     const profileData = {
       user: req.user.userId,
@@ -37,6 +37,7 @@ export const createOrUpdateProfile = async (req, res, next) => {
       location,
       bio,
       skills,
+      education,
     };
 
     let profile = await Profile.findOne({ user: req.user.userId });
@@ -72,7 +73,6 @@ export const createOrUpdateProfile = async (req, res, next) => {
   }
 };
 
-
 // @desc    Get profile by user ID
 // @route   GET /api/profile/user/:userId
 // @access  Public
@@ -80,7 +80,7 @@ export const getProfileByUserId = async (req, res, next) => {
   try {
     const profile = await Profile.findOne({ user: req.params.userId }).populate(
       "user",
-      "name"
+      "name email"
     );
 
     if (!profile) {

@@ -17,7 +17,7 @@ import { checkAuth, login, logout } from "../services/auth";
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Optional: for loading state
+  const [loading, setLoading] = useState(true);
 
   // Check auth when app loads
   useEffect(() => {

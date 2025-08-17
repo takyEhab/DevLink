@@ -23,8 +23,11 @@ const ProfileSchema = new mongoose.Schema({
   },
   bio: {
     type: String,
-    trim: true,
     maxlength: 500,
+  },
+  education: {
+    type: String,
+    maxlength: 150,
   },
   portfolio: {
     type: String,
