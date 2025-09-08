@@ -224,37 +224,42 @@ const objForEdit = {
 const DeveloperProfile = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
-  const [isSaving, setIsSaving] = useState(false);
-
+  const [isEditSaving, setIsEditSaving] = useState(false);
+  const [isAddProjectSaving, setAddProjectSaving] = useState(false);
+  const [isAddProject, setIsAddProject] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user } = useContext(UserContext);
   const [editForm, setEditForm] = useState({});
+  const [addForm, setAddForm] = useState({
+    title: "Full stack",
+    duration: "120 Day",
+    description: "Best Project Ever",
+    technologies: "React",
+  });
   const [myDeveloper, setMyDeveloper] = useState(null);
   // Get current user from context
+  const fetchDeveloper = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/profile/user/${id}`
+      );
+      const data = res.data;
+      setMyDeveloper(data.data.profile);
+      const newEditForm = {
+        ...data.data.profile,
+        name: data.data.profile.user.name,
+      };
+      setEditForm(newEditForm);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchDeveloper() {
-      setLoading(true);
-      try {
-        const res = await axios.get(
-          `http://localhost:3000/api/profile/user/${id}`
-        );
-        const data = res.data;
-        setMyDeveloper(data.data.profile);
-        const newEditForm = {
-          ...data.data.profile,
-          name: data.data.profile.user.name,
-        };
-        setEditForm(newEditForm);
-        // setDeveloper(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false); // runs only after fetch finishes
-      }
-    }
-
     fetchDeveloper();
   }, [id]);
 
@@ -269,7 +274,7 @@ const DeveloperProfile = () => {
 
   const saveChanges = async () => {
     try {
-      setIsSaving(true);
+      setIsEditSaving(true);
 
       let res = await axios.post(
         "http://localhost:3000/api/profile/",
@@ -280,15 +285,17 @@ const DeveloperProfile = () => {
       );
 
       const data = res.data;
-
-      console.log(data);
+      console.log({ editForm });
+      console.log({ data: data.data });
       toast.success("Profile updated!");
-      // setIsEditMode(false);
+
+      fetchDeveloper();
+      setIsEditMode(false);
     } catch (error) {
       toast.error("Failed to save changes.");
       console.log(error);
     } finally {
-      setIsSaving(false);
+      setIsEditSaving(false);
     }
   };
 
@@ -306,6 +313,43 @@ const DeveloperProfile = () => {
     } catch (err) {
       toast.error("Failed to copy link.");
       toast.error(err.message);
+    }
+  };
+  const addProject = async () => {
+    try {
+      setAddProjectSaving(true); // start loading
+
+      const formData = new FormData();
+      formData.append("title", addForm.title);
+      formData.append("description", addForm.description);
+      formData.append("technologies", addForm.technologies);
+      formData.append("duration", addForm.duration);
+
+      if (addForm.file) {
+        formData.append("image", addForm.file); // image from state
+      }
+
+      await axios.post("http://localhost:3000/api/projects", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
+
+      // success -> close modal + maybe reset form
+      setIsAddProject(false);
+      setAddForm({
+        title: "",
+        description: "",
+        technologies: "",
+        duration: "",
+        file: null,
+      });
+    } catch (error) {
+      console.error("Error adding project:", error);
+      alert("Failed to add project. Please try again.");
+    } finally {
+      setAddProjectSaving(false); // stop loading no matter success/fail
     }
   };
 
@@ -596,14 +640,16 @@ const DeveloperProfile = () => {
 
               {activeTab === "projects" && (
                 <div className="space-y-6">
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={() => setIsEditMode(!isEditMode)}
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Add Project
-                  </Button>
+                  {isOwnProfile && (
+                    <Button
+                      size="lg"
+                      className="w-full"
+                      onClick={() => setIsAddProject(!isAddProject)}
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Add Project
+                    </Button>
+                  )}
                   {developer.recentProjects.map((project) => (
                     <Card key={project.id} className="p-6">
                       <div className="flex flex-col lg:flex-row gap-6">
@@ -646,34 +692,11 @@ const DeveloperProfile = () => {
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
-                              <span className="text-slate-400">Budget:</span>
-                              <p className="text-white font-semibold">
-                                ${project.budget.toLocaleString()}
-                              </p>
-                            </div>
-                            <div>
                               <span className="text-slate-400">Duration:</span>
                               <p className="text-white font-semibold">
                                 {project.duration}
                               </p>
                             </div>
-                            <div>
-                              <span className="text-slate-400">Client:</span>
-                              <p className="text-white font-semibold">
-                                {project.client}
-                              </p>
-                            </div>
-                            {project.rating && (
-                              <div>
-                                <span className="text-slate-400">Rating:</span>
-                                <div className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                  <span className="text-white font-semibold">
-                                    {project.rating}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -862,7 +885,7 @@ const DeveloperProfile = () => {
                   variant="outline"
                   onClick={() => setIsEditMode(false)}
                   className="flex-1"
-                  disabled={isSaving}
+                  disabled={isEditSaving}
                 >
                   Cancel
                 </Button>
@@ -871,9 +894,169 @@ const DeveloperProfile = () => {
                   variant="success"
                   onClick={saveChanges}
                   className="flex-1"
-                  disabled={isSaving}
+                  disabled={isEditSaving}
                 >
-                  {isSaving ? (
+                  {isEditSaving ? (
+                    <span className="flex items-center gap-2">
+                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </span>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Add project Modal */}
+      {isAddProject && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">Add Project</h2>
+                <button
+                  onClick={() => setIsAddProject(false)}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    value={addForm.title}
+                    onChange={(e) =>
+                      setAddForm({
+                        ...addForm,
+                        title: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Enter project title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    value={addForm.duration}
+                    onChange={(e) =>
+                      setAddForm({
+                        ...addForm,
+                        duration: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Enter Project duration"
+                  />
+                </div>
+              </div>
+
+              {/* description */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Project description
+                </label>
+                <textarea
+                  rows={3}
+                  value={addForm.description}
+                  onChange={(e) =>
+                    setAddForm({
+                      ...addForm,
+                      description: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="Write a description for your project..."
+                />
+              </div>
+
+              {/* Technologies */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Technologies (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={addForm.technologies}
+                  onChange={(e) =>
+                    setAddForm({
+                      ...addForm,
+                      technologies: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="React, Node.js, TypeScript, AWS..."
+                />
+              </div>
+
+              {/* Project Image */}
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Project Image
+              </label>
+              <div className="flex flex-col items-start space-y-4">
+                <label className="cursor-pointer bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setAddForm({
+                          ...addForm,
+                          file,
+                        });
+                      }
+                    }}
+                  />
+                </label>
+
+                {/* Preview the image */}
+                {addForm.file && (
+                  <img
+                    src={URL.createObjectURL(addForm.file)}
+                    alt="Preview"
+                    className="mt-2 w-40 h-40 object-cover rounded-lg border border-slate-600"
+                  />
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 pt-6 border-t border-slate-700">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddProject(false)}
+                  className="flex-1"
+                  disabled={isAddProjectSaving}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  variant="success"
+                  onClick={addProject}
+                  className="flex-1"
+                  disabled={isAddProjectSaving}
+                >
+                  {isAddProjectSaving ? (
                     <span className="flex items-center gap-2">
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Saving...

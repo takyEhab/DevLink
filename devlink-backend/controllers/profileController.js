@@ -29,7 +29,16 @@ export const getMyProfile = async (req, res, next) => {
 // @access  Private
 export const createOrUpdateProfile = async (req, res, next) => {
   try {
-    const { title, location, bio, skills, education } = req.body;
+    const {
+      title,
+      location,
+      bio,
+      skills,
+      education,
+      github,
+      portfolio,
+      linkedIn,
+    } = req.body;
 
     const profileData = {
       user: req.user.userId,
@@ -38,6 +47,9 @@ export const createOrUpdateProfile = async (req, res, next) => {
       bio,
       skills,
       education,
+      github,
+      portfolio,
+      linkedIn,
     };
 
     let profile = await Profile.findOne({ user: req.user.userId });

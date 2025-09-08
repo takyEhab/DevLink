@@ -1,12 +1,13 @@
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import connectToDatabase from "./database/mongodb.js";
-import userRouter from "./routes/userRoutes.js";
 import errorMiddleware from "./middlewares/errorMiddleware.js";
 import { authorizeAdmin } from "./middlewares/authorizeAdmin.js";
 import authenticate from "./middlewares/authMiddleware.js";
-import cookieParser from "cookie-parser";
-import cors from "cors";
+import userRouter from "./routes/userRoutes.js";
 import profileRouter from "./routes/profileRoutes.js";
+import projectRouter from "./routes/projectRoutes.js";
 
 const app = express();
 const port = 3000;
@@ -24,6 +25,7 @@ app.use(cookieParser());
 
 app.use("/api/users", userRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/projects", projectRouter);
 
 // error handler
 app.use(errorMiddleware);
