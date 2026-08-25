@@ -47,6 +47,6 @@ app.get("/check-cookie", authenticate, (req, res) => {
 });
 
 app.listen(port, async () => {
-  console.log(`Example app listening on port ${port}!`);
+  console.log(`Server is running on http://localhost:${port}`);
   await connectToDatabase();
 });

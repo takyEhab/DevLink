@@ -33,7 +33,7 @@ const errorMiddleware = (err, req, res, next) => {
   }
 
   // Log the full error
-  console.error(statusCode);
+  console.error(err);
 
   res.status(statusCode).json({
     success: false,

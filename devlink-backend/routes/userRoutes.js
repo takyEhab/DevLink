@@ -26,7 +26,7 @@ userRouter.get("/is-authenticated", authenticate, getCurrentUser);
 
 // @route   POST /api/users/logout
 // @desc    Logout user (clear token/cookie)
-// @access  Public or Private (your choice)
-userRouter.post("/logout", logout);
+// @access  Private
+userRouter.post("/logout", authenticate, logout);
 
 export default userRouter;

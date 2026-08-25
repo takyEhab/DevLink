@@ -7,13 +7,15 @@ export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
+    // check if the fields are empty
     if (!email || !name || !password) {
       const error = new Error("Please enter both name and email and password");
       error.statusCode = 400;
       throw error;
     }
-    const existingUser = await User.findOne({ email });
 
+    // check if the email already exists
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.log(existingUser);
       const error = new Error("Email already exists");
@@ -21,16 +23,23 @@ export const register = async (req, res, next) => {
       throw error;
     }
 
+    // password length check
+    if (password.length < 6) {
+      const error = new Error("Password must be at least 6 characters");
+      error.statusCode = 400;
+      throw error;
+    }
+
     // hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUsers = await User.create([
+    const user = await User.create(
       { name, email, password: hashedPassword },
-    ]);
+    );
 
     const token = jwt.sign(
-      { userId: newUsers[0]._id, role: newUsers[0].role },
+      { userId: user._id, role: user.role },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -43,11 +52,14 @@ export const register = async (req, res, next) => {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
-    // no need to send the token
+    // Convert user to plain object and remove password
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     res.status(201).json({
       success: true,
       message: "Account created successfully",
-      data: { user: newUsers[0] },
+      data: { user: safeUser },
     });
   } catch (error) {
     console.log(error);
@@ -78,9 +90,11 @@ export const login = async (req, res, next) => {
       throw error;
     }
 
-    const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
-    });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
 
     //  Set token in cookie
     res.cookie("token", token, {
@@ -93,8 +107,7 @@ export const login = async (req, res, next) => {
     // Convert user to plain object and remove password
     const safeUser = user.toObject();
     delete safeUser.password;
-    // no need for sending token back to the client
-    // it's in the cookies
+
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
@@ -105,13 +118,24 @@ export const login = async (req, res, next) => {
   }
 };
 
-export const getCurrentUser = async (req, res) => {
-  const user = await User.findById(req.user.userId).select("-password");
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
-  }
 
-  res.status(200).json({ isAuthenticated: true, user });
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId).select("-password");
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const logout = async (req, res) => {
