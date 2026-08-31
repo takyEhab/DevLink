@@ -1,43 +1,37 @@
-// controllers/projectController.js
 import Project from "../models/project.js";
 
-// POST /api/projects
-export const createProject = async (req, res) => {
+export const createProject = async (req, res, next) => {
   try {
     const { title, description, technologies, githubLink, liveDemo, duration } =
       req.body;
 
-    // if image was uploaded
     let imageUrl = null;
     if (req.file) {
-      imageUrl = req.file.path; // cloudinary auto adds .path with secure_url
+      imageUrl = req.file.path;
     }
-    const project = new Project({
-      user: req.user.userId,
+
+    const project = await Project.create({
+      userId: req.user.userId,
       title,
       description,
-      technologies: technologies?.split(",").map((t) => t.trim()), // if comma-separated
+      technologies,
       githubLink,
       liveDemo,
       duration,
       image: imageUrl,
     });
 
-    const savedProject = await project.save();
-    res.status(201).json(savedProject);
+    res.status(201).json(project);
   } catch (err) {
-    console.log("test err");
-    console.log(err);
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 };
 
-// GET /api/projects/:userId
-export const getProjectsByUser = async (req, res) => {
+export const getProjectsByUser = async (req, res, next) => {
   try {
-    const projects = await Project.find({ user: req.params.userId });
+    const projects = await Project.findByUserId(req.params.userId);
     res.json(projects);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 };

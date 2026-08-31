@@ -1,19 +1,14 @@
-import Profile from "../models/Profile.js";
+import Profile from "../models/profile.js";
 
-// @desc    Get current user's profile
-// @route   GET /api/profile/me
-// @access  Private
 export const getMyProfile = async (req, res, next) => {
   try {
-    const profile = await Profile.findOne({ user: req.user.userId }).populate(
-      "user",
-      "-password"
-    );
+    const profile = await Profile.findOneByUserId(req.user.userId);
 
     if (!profile) {
       res.status(404);
       throw new Error("Profile not found");
     }
+
     res.status(200).json({
       success: true,
       message: "Profile retrieved successfully",
@@ -24,9 +19,6 @@ export const getMyProfile = async (req, res, next) => {
   }
 };
 
-// @desc    Create or update profile
-// @route   POST /api/profile
-// @access  Private
 export const createOrUpdateProfile = async (req, res, next) => {
   try {
     const {
@@ -40,8 +32,10 @@ export const createOrUpdateProfile = async (req, res, next) => {
       linkedIn,
     } = req.body;
 
+    const existingProfile = await Profile.findOneByUserId(req.user.userId);
+
     const profileData = {
-      user: req.user.userId,
+      userId: req.user.userId,
       title,
       location,
       bio,
@@ -52,16 +46,11 @@ export const createOrUpdateProfile = async (req, res, next) => {
       linkedIn,
     };
 
-    let profile = await Profile.findOne({ user: req.user.userId });
-
-    if (profile) {
-      // Update existing profile
-      profile = await Profile.findOneAndUpdate(
-        { user: req.user.userId },
-        { $set: profileData },
-        { new: true }
-      ).populate("user", "name");
-
+    if (existingProfile) {
+      const profile = await Profile.updateByUserId(
+        req.user.userId,
+        profileData,
+      );
       return res.status(200).json({
         success: true,
         message: "Profile updated successfully",
@@ -69,31 +58,21 @@ export const createOrUpdateProfile = async (req, res, next) => {
       });
     }
 
-    // Create new profile
-    const newProfile = new Profile(profileData);
-    await newProfile.save();
-
-    const populatedProfile = await newProfile.populate("user", "name");
+    const profile = await Profile.create(profileData);
 
     res.status(201).json({
       success: true,
       message: "Profile created successfully",
-      data: { profile: populatedProfile },
+      data: { profile },
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Get profile by user ID
-// @route   GET /api/profile/user/:userId
-// @access  Public
 export const getProfileByUserId = async (req, res, next) => {
   try {
-    const profile = await Profile.findOne({ user: req.params.userId }).populate(
-      "user",
-      "name email"
-    );
+    const profile = await Profile.findOneByUserId(req.params.userId);
 
     if (!profile) {
       res.status(404);

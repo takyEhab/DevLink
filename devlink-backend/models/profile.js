@@ -1,55 +1,92 @@
-import mongoose from "mongoose";
+const normalizeSkills = (value) => {
+  if (Array.isArray(value)) return value.slice(0, 10);
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.slice(0, 10) : [];
+  } catch (error) {
+    return [];
+  }
+};
 
-const ProfileSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true,
-  },
-  title: {
-    type: String,
-    trim: true,
-    maxlength: 100,
-  },
-  location: {
-    type: String,
-    trim: true,
-    maxlength: 100,
-  },
-  skills: {
-    type: [String],
-    validate: [arrayLimit, "{PATH} exceeds the limit of 10"],
-  },
-  bio: {
-    type: String,
-    maxlength: 500,
-  },
-  education: {
-    type: String,
-    maxlength: 150,
-  },
-  portfolio: {
-    type: String,
-    trim: true,
-    // validation for URL format
-    match: /^https?:\/\/.+/,
-  },
-  github: {
-    type: String,
-    trim: true,
-    match: /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$/,
-  },
-  linkedIn: {
-    type: String,
-    trim: true,
-    match: /^(https?:\/\/)?(www\.)?linkedin\.com\/[a-zA-Z0-9_-]+\/?$/,
-  },
-});
+const Profile = {
+  async findOneByUserId(userId) {
+    const { query } = await import("../database/mongodb.js");
+    const [rows] = await query(
+      `SELECT p.*, u.name, u.email
+       FROM profiles p
+       JOIN users u ON u.id = p.user_id
+       WHERE p.user_id = ? LIMIT 1`,
+      [userId],
+    );
 
-// Limit skills array to 10 items max
-function arrayLimit(val) {
-  return val.length <= 10;
-}
-const Profile = mongoose.model("Profile", ProfileSchema);
+    if (!rows[0]) return null;
+
+    const profile = rows[0];
+    return {
+      ...profile,
+      skills: normalizeSkills(profile.skills),
+      user: { id: profile.user_id, name: profile.name, email: profile.email },
+    };
+  },
+
+  async create(profileData) {
+    const { query } = await import("../database/mongodb.js");
+
+    const [result] = await query(
+      `INSERT INTO profiles (user_id, title, location, skills, bio, education, portfolio, github, linkedin)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        profileData.userId,
+        profileData.title || null,
+        profileData.location || null,
+        JSON.stringify(normalizeSkills(profileData.skills)),
+        profileData.bio || null,
+        profileData.education || null,
+        profileData.portfolio || null,
+        profileData.github || null,
+        profileData.linkedIn || null,
+      ],
+    );
+
+    const [rows] = await query(
+      `SELECT p.*, u.name, u.email
+       FROM profiles p
+       JOIN users u ON u.id = p.user_id
+       WHERE p.id = ? LIMIT 1`,
+      [result.insertId],
+    );
+
+    const profile = rows[0];
+    return {
+      ...profile,
+      skills: normalizeSkills(profile.skills),
+      user: { id: profile.user_id, name: profile.name, email: profile.email },
+    };
+  },
+
+  async updateByUserId(userId, profileData) {
+    const { query } = await import("../database/mongodb.js");
+
+    await query(
+      `UPDATE profiles
+       SET title = ?, location = ?, skills = ?, bio = ?, education = ?, portfolio = ?, github = ?, linkedin = ?
+       WHERE user_id = ?`,
+      [
+        profileData.title || null,
+        profileData.location || null,
+        JSON.stringify(normalizeSkills(profileData.skills)),
+        profileData.bio || null,
+        profileData.education || null,
+        profileData.portfolio || null,
+        profileData.github || null,
+        profileData.linkedIn || null,
+        userId,
+      ],
+    );
+
+    return this.findOneByUserId(userId);
+  },
+};
+
 export default Profile;

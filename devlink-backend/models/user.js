@@ -1,23 +1,45 @@
-import mongoose from "mongoose";
+const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Name is required"],
-    minlength: 3,
+const User = {
+  async findOneByEmail(email) {
+    const { query } = await import("../database/mongodb.js");
+    const [rows] = await query("SELECT * FROM users WHERE email = ? LIMIT 1", [
+      email,
+    ]);
+    return rows[0] || null;
   },
-  email: {
-    type: String,
-    unique: true,
-    minlength: 6,
-    required: [true, "Email is required"],
-    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email address"],
+
+  async findById(id) {
+    const { query } = await import("../database/mongodb.js");
+    const [rows] = await query(
+      "SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = ? LIMIT 1",
+      [id],
+    );
+    return rows[0] || null;
   },
-  password: {
-    type: String,
-    required: [true, "Password is required"],
-    minlength: 6,
+
+  async create({ name, email, password, role = "user" }) {
+    const { query } = await import("../database/mongodb.js");
+
+    if (!name || !email || !password) {
+      throw new Error("Name, email and password are required");
+    }
+    if (!validateEmail(email)) {
+      throw new Error("Please enter a valid email address");
+    }
+
+    const [result] = await query(
+      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+      [name, email, password, role],
+    );
+
+    const [rows] = await query(
+      "SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = ? LIMIT 1",
+      [result.insertId],
+    );
+
+    return rows[0];
   },
-});
-const User = mongoose.model("User", userSchema);
+};
+
 export default User;

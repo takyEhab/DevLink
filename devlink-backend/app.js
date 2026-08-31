@@ -10,13 +10,13 @@ import profileRouter from "./routes/profileRoutes.js";
 import projectRouter from "./routes/projectRoutes.js";
 
 const app = express();
-const port = 3000;
+const port = Number(process.env.PORT || 3000);
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // allow frontend URL
-    credentials: true, // allow cookies
-  })
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
 );
 
 app.use(express.json());
@@ -27,26 +27,30 @@ app.use("/api/users", userRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/projects", projectRouter);
 
-// error handler
 app.use(errorMiddleware);
 
-// root testing
 app.get("/", async (req, res) => {
   res.status(200).json({ message: "api root" });
 });
 
-// testing only
 app.get("/api/admin", authorizeAdmin, (req, res) => {
   res.send("Welcome, admin!");
 });
-// testing cookie with user
+
 app.get("/check-cookie", authenticate, (req, res) => {
-  console.log(req.cookies);
-  console.log(req.user);
   res.send({ cookie: req.cookies, me: req.user });
 });
 
-app.listen(port, async () => {
-  console.log(`Example app listening on port ${port}!`);
-  await connectToDatabase();
-});
+const startServer = async () => {
+  try {
+    await connectToDatabase();
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}!`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
