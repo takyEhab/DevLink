@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   Mail,
   Lock,
@@ -335,10 +335,11 @@ const Login = ({ onSwitchToSignup }) => {
 // Signup Component
 const Signup = ({ onSwitchToLogin, onSignup }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
+  const [registeredUser, setRegisteredUser] = useState(null);
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
     name: "",
@@ -355,6 +356,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
     github: "https://github.com/takyEhab",
     linkedIn: "https://www.linkedin.com/in/taky-gad",
   });
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const validateStep1 = () => {
@@ -441,9 +443,10 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
           },
           {
             withCredentials: true, // ✅ sends cookies
-          }
+          },
         );
         if (res.data.success) {
+          setRegisteredUser(res.data.data.user);
           toast.success(res.data.message);
         }
         setCurrentStep(2);
@@ -452,7 +455,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
 
         setGeneralError(
           error.response?.data?.error ||
-            "Something went wrong. Please try again."
+            "Something went wrong. Please try again.",
         );
       } finally {
         setIsLoading(false);
@@ -494,15 +497,14 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
           userData,
           {
             withCredentials: true, // ✅ sends cookies
-          }
+          },
         );
         res = res.data;
-        console.log(res);
         if (res.success) {
+          setUser(registeredUser);
           toast.success(res.message);
-          // return navigate(`/developer/${res.data.profile.user._id}`);
+          navigate("/");
         }
-        // navigate("/");
       } catch (error) {
         const errorMessage =
           error.response?.data?.error ||
@@ -839,8 +841,8 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                     ? "Validating..."
                     : "Creating Account..."
                   : currentStep === 1
-                  ? "Continue"
-                  : "Create Developer Account"}
+                    ? "Continue"
+                    : "Create Developer Account"}
               </Button>
 
               {currentStep === 2 && (
@@ -892,6 +894,18 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
 // Main Auth Component
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { user } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
+
+  if (user) {
+    return null;
+  }
 
   return (
     <>

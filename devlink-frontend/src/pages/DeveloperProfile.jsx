@@ -243,7 +243,7 @@ const DeveloperProfile = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/profile/user/${id}`
+        `http://localhost:3000/api/profile/user/${id}`,
       );
       const data = res.data;
       setMyDeveloper(data.data.profile);
@@ -263,7 +263,7 @@ const DeveloperProfile = () => {
     fetchDeveloper();
   }, [id]);
 
-  const isOwnProfile = user?._id === id;
+  const isOwnProfile = String(user?.id) === id;
 
   let developer = { ...developerData, ...myDeveloper };
 
@@ -281,7 +281,7 @@ const DeveloperProfile = () => {
         editForm,
         {
           withCredentials: true, // ✅ sends cookies
-        }
+        },
       );
 
       const data = res.data;

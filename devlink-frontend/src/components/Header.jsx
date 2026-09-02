@@ -1,12 +1,6 @@
-import {
-  Bell,
-  Settings,
-  User,
-  LogOut,
-  ChevronDown,
-} from "lucide-react";
-import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Bell, Settings, User, LogOut, ChevronDown } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 
 // Simple UI Components
@@ -79,7 +73,12 @@ const Header = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationCount] = useState(5); // Mock notification count
   const { user, apiLogout } = useContext(UserContext);
+  const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setUserMenuOpen(false);
+  }, [location.pathname]);
 
   const handleUserMenuToggle = () => {
     setUserMenuOpen(!userMenuOpen);
@@ -87,8 +86,8 @@ const Header = () => {
 
   const handleProfileClick = () => {
     setUserMenuOpen(false);
-    
-    navigate(`/developer/${user._id}`);
+
+    navigate(`/developer/${user.id}`);
   };
 
   const handleLogoutClick = async () => {
