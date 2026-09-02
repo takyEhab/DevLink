@@ -333,7 +333,7 @@ const Login = ({ onSwitchToSignup }) => {
 };
 
 // Signup Component
-const Signup = ({ onSwitchToLogin, onSignup }) => {
+const Signup = ({ onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -519,6 +519,8 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
   // `/developer/${formData.name ? formData.name : "taky"}`
 
   const handleSkip = async () => {
+    setUser(registeredUser);
+    toast.success("You are now logged in.");
     navigate("/");
   };
 
@@ -699,7 +701,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
               <>
                 {/* Optional Profile Information */}
                 <div>
-                  <Label htmlFor="title">Professional Title</Label>
+                  <Label htmlFor="title">Professional Title *</Label>
                   <Input
                     id="title"
                     name="title"
@@ -713,7 +715,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                 </div>
 
                 <div>
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location">Location *</Label>
                   <Input
                     id="location"
                     name="location"
@@ -728,7 +730,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
 
                 <div>
                   <Label htmlFor="primarySkills">
-                    Primary Skills (comma-separated)
+                    Primary Skills (comma-separated) *
                   </Label>
                   <Input
                     id="primarySkills"
@@ -746,7 +748,7 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                 </div>
 
                 <div>
-                  <Label htmlFor="bio">Professional Bio</Label>
+                  <Label htmlFor="bio">Professional Bio *</Label>
                   <Textarea
                     id="bio"
                     name="bio"

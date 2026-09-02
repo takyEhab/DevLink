@@ -1,6 +1,7 @@
 import { Bell, Settings, User, LogOut, ChevronDown } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { UserContext } from "../context/UserContext";
 
 // Simple UI Components
@@ -93,6 +94,7 @@ const Header = () => {
   const handleLogoutClick = async () => {
     setUserMenuOpen(false);
     await apiLogout();
+    toast.success("You have been logged out successfully.");
     navigate("/");
   };
 

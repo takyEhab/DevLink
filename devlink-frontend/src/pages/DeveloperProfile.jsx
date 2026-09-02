@@ -238,6 +238,19 @@ const DeveloperProfile = () => {
     technologies: "React",
   });
   const [myDeveloper, setMyDeveloper] = useState(null);
+  const [isSetupSaving, setIsSetupSaving] = useState(false);
+  const [setupForm, setSetupForm] = useState({
+    title: "",
+    location: "",
+    bio: "",
+    skills: "",
+    education: "",
+    github: "",
+    linkedIn: "",
+    portfolio: "",
+  });
+  const isOwnProfile = String(user?.id) === id;
+
   // Get current user from context
   const fetchDeveloper = async () => {
     setLoading(true);
@@ -263,8 +276,6 @@ const DeveloperProfile = () => {
     fetchDeveloper();
   }, [id]);
 
-  const isOwnProfile = String(user?.id) === id;
-
   let developer = { ...developerData, ...myDeveloper };
 
   const tabs = [
@@ -273,6 +284,17 @@ const DeveloperProfile = () => {
   ];
 
   const saveChanges = async () => {
+    if (
+      !editForm.title?.trim() ||
+      !editForm.location?.trim() ||
+      !editForm.bio?.trim() ||
+      !Array.isArray(editForm.skills) ||
+      editForm.skills.length === 0
+    ) {
+      toast.error("Title, location, bio, and at least one skill are required.");
+      return;
+    }
+
     try {
       setIsEditSaving(true);
 
@@ -296,6 +318,44 @@ const DeveloperProfile = () => {
       console.log(error);
     } finally {
       setIsEditSaving(false);
+    }
+  };
+
+  const createProfile = async () => {
+    const skills = setupForm.skills
+      .split(",")
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+
+    if (
+      !setupForm.title.trim() ||
+      !setupForm.location.trim() ||
+      !setupForm.bio.trim() ||
+      skills.length === 0
+    ) {
+      toast.error("Title, location, bio, and at least one skill are required.");
+      return;
+    }
+
+    try {
+      setIsSetupSaving(true);
+      const res = await axios.post(
+        "http://localhost:3000/api/profile/",
+        {
+          ...setupForm,
+          skills,
+        },
+        { withCredentials: true },
+      );
+
+      setMyDeveloper(res.data.data.profile);
+      toast.success("Your developer profile was created.");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to create your profile.",
+      );
+    } finally {
+      setIsSetupSaving(false);
     }
   };
 
@@ -357,7 +417,113 @@ const DeveloperProfile = () => {
     return <Loading />;
   }
   if (!myDeveloper) {
-    return <DeveloperNotFound />;
+    if (!isOwnProfile) {
+      return <DeveloperNotFound />;
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-12">
+        <div className="max-w-3xl mx-auto">
+          <Card className="p-8 md:p-10">
+            <div className="text-center mb-8">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Plus className="w-8 h-8 text-emerald-400" />
+              </div>
+              <h1 className="text-3xl font-bold">
+                Create Your Developer Profile
+              </h1>
+              <p className="mt-3 text-slate-300">
+                Your account is ready. Add your professional details so other
+                developers can discover you.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                ["title", "Job Title", "e.g. Senior Frontend Developer"],
+                ["location", "Location", "e.g. Cairo, Egypt"],
+                ["education", "Education", "e.g. Computer Science"],
+                ["portfolio", "Portfolio URL", "https://yourportfolio.com"],
+                ["github", "GitHub URL", "https://github.com/username"],
+                [
+                  "linkedIn",
+                  "LinkedIn URL",
+                  "https://linkedin.com/in/username",
+                ],
+              ].map(([field, label, placeholder]) => (
+                <div key={field}>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    {label}
+                    {["title", "location"].includes(field) && (
+                      <span className="text-emerald-400"> *</span>
+                    )}
+                  </label>
+                  <input
+                    type={
+                      field.includes("portfolio") ||
+                      field.includes("github") ||
+                      field.includes("linkedIn")
+                        ? "url"
+                        : "text"
+                    }
+                    value={setupForm[field]}
+                    onChange={(event) =>
+                      setSetupForm({
+                        ...setupForm,
+                        [field]: event.target.value,
+                      })
+                    }
+                    placeholder={placeholder}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Skills (comma-separated){" "}
+                  <span className="text-emerald-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={setupForm.skills}
+                  onChange={(event) =>
+                    setSetupForm({ ...setupForm, skills: event.target.value })
+                  }
+                  placeholder="React, Node.js, TypeScript"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  About You <span className="text-emerald-400">*</span>
+                </label>
+                <textarea
+                  rows={5}
+                  value={setupForm.bio}
+                  onChange={(event) =>
+                    setSetupForm({ ...setupForm, bio: event.target.value })
+                  }
+                  placeholder="Tell other developers about your experience and interests"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+
+            <Button
+              size="lg"
+              className="w-full mt-8"
+              onClick={createProfile}
+              disabled={isSetupSaving}
+            >
+              {isSetupSaving ? "Saving Profile..." : "Create Profile"}
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -744,7 +910,7 @@ const DeveloperProfile = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Job Title
+                    Job Title <span className="text-emerald-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -758,7 +924,7 @@ const DeveloperProfile = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Location
+                    Location <span className="text-emerald-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -790,7 +956,7 @@ const DeveloperProfile = () => {
               {/* Bio */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Bio
+                  Bio <span className="text-emerald-400">*</span>
                 </label>
                 <textarea
                   value={editForm.bio}
@@ -806,7 +972,8 @@ const DeveloperProfile = () => {
               {/* Skills */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Skills (comma-separated)
+                  Skills (comma-separated){" "}
+                  <span className="text-emerald-400">*</span>
                 </label>
                 <input
                   type="text"

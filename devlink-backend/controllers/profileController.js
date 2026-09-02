@@ -32,6 +32,23 @@ export const createOrUpdateProfile = async (req, res, next) => {
       linkedIn,
     } = req.body;
 
+    const missingFields = [];
+    if (!title?.trim()) missingFields.push("title");
+    if (!location?.trim()) missingFields.push("location");
+    if (!bio?.trim()) missingFields.push("bio");
+    if (
+      !Array.isArray(skills) ||
+      skills.filter((skill) => skill?.trim()).length === 0
+    ) {
+      missingFields.push("skills");
+    }
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: `Required profile fields missing: ${missingFields.join(", ")}`,
+      });
+    }
+
     const existingProfile = await Profile.findOneByUserId(req.user.userId);
 
     const profileData = {
