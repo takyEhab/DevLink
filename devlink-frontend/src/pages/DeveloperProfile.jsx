@@ -31,7 +31,7 @@ import { UserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
 import DeveloperNotFound from "./DeveloperNotFound";
-import axios from "axios";
+import api from "../services/api";
 
 // Enhanced UI components with custom styling
 const Button = ({
@@ -255,9 +255,7 @@ const DeveloperProfile = () => {
   const fetchDeveloper = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `http://localhost:3000/api/profile/user/${id}`,
-      );
+      const res = await api.get(`/profile/user/${id}`);
       const data = res.data;
       setMyDeveloper(data.data.profile);
       const newEditForm = {
@@ -298,13 +296,7 @@ const DeveloperProfile = () => {
     try {
       setIsEditSaving(true);
 
-      let res = await axios.post(
-        "http://localhost:3000/api/profile/",
-        editForm,
-        {
-          withCredentials: true, // ✅ sends cookies
-        },
-      );
+      let res = await api.post("/profile/", editForm);
 
       const data = res.data;
       console.log({ editForm });
@@ -339,14 +331,10 @@ const DeveloperProfile = () => {
 
     try {
       setIsSetupSaving(true);
-      const res = await axios.post(
-        "http://localhost:3000/api/profile/",
-        {
-          ...setupForm,
-          skills,
-        },
-        { withCredentials: true },
-      );
+      const res = await api.post("/profile/", {
+        ...setupForm,
+        skills,
+      });
 
       setMyDeveloper(res.data.data.profile);
       toast.success("Your developer profile was created.");
@@ -389,11 +377,10 @@ const DeveloperProfile = () => {
         formData.append("image", addForm.file); // image from state
       }
 
-      await axios.post("http://localhost:3000/api/projects", formData, {
+      await api.post("/projects", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: true,
       });
 
       // success -> close modal + maybe reset form

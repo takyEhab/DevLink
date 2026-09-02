@@ -10,10 +10,10 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 // Simple UI Components
 const Button = ({
@@ -165,17 +165,6 @@ const Login = ({ onSwitchToSignup }) => {
     setIsLoading(true);
 
     try {
-      // send call to my api
-      // const res = await axios.post(
-      //   "http://localhost:3000/api/login/",
-      //   {
-      //     email: formData.email,
-      //     password: formData.password,
-      //   },
-      //   {
-      //     withCredentials: true, // ✅ sends cookies
-      //   }
-      // );
       const res = await apiLogin(formData.email, formData.password);
       if (res.success) {
         toast.success(res.message);
@@ -434,17 +423,11 @@ const Signup = ({ onSwitchToLogin }) => {
       setIsLoading(true);
 
       try {
-        const res = await axios.post(
-          "http://localhost:3000/api/users/register/",
-          {
-            email: formData.email,
-            name: formData.name,
-            password: formData.password,
-          },
-          {
-            withCredentials: true, // ✅ sends cookies
-          },
-        );
+        const res = await api.post("/users/register/", {
+          email: formData.email,
+          name: formData.name,
+          password: formData.password,
+        });
         if (res.data.success) {
           setRegisteredUser(res.data.data.user);
           toast.success(res.data.message);
@@ -492,13 +475,7 @@ const Signup = ({ onSwitchToLogin }) => {
           linkedIn: formData.linkedIn,
         };
 
-        let res = await axios.post(
-          "http://localhost:3000/api/profile/",
-          userData,
-          {
-            withCredentials: true, // ✅ sends cookies
-          },
-        );
+        let res = await api.post("/profile/", userData);
         res = res.data;
         if (res.success) {
           setUser(registeredUser);
