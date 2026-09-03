@@ -239,7 +239,7 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onBack }) => {
   );
 
   return (
-    <div className="w-full lg:w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
+    <div className="w-full lg:w-80 h-full min-h-0 bg-gray-800 border-r border-gray-700 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between mb-4">
@@ -266,7 +266,7 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onBack }) => {
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {filteredChats.map((chat) => (
           <div
             key={chat.id}
@@ -339,8 +339,10 @@ const Message = ({ message, isMe }) => {
   };
 
   return (
-    <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-4`}>
-      <div className={`max-w-xs lg:max-w-md ${isMe ? "order-2" : "order-1"}`}>
+    <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-3`}>
+      <div
+        className={`max-w-[85%] lg:max-w-md ${isMe ? "order-2" : "order-1"}`}
+      >
         <div
           className={`px-4 py-2 rounded-lg ${
             isMe
@@ -404,7 +406,7 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-900">
+    <div className="flex-1 min-w-0 min-h-0 flex flex-col bg-gray-900">
       {/* Chat Header */}
       <div className="p-4 border-b border-gray-700 bg-gray-800">
         <div className="flex items-center justify-between">
@@ -446,7 +448,7 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-1">
         {chat.messages.map((message) => (
           <Message
             key={message.id}
@@ -474,7 +476,7 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
       )}
 
       {/* Message Input */}
-      <div className="p-4 border-t border-gray-700 bg-gray-800">
+      <div className="shrink-0 p-3 sm:p-4 border-t border-gray-700 bg-gray-800">
         <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
           <div className="flex-1">
             <div className="flex items-center space-x-2 bg-gray-700 rounded-lg px-3 py-2">
@@ -625,9 +627,11 @@ const ChatUI = ({ onBack }) => {
   };
 
   return (
-    <div className="h-screen bg-gray-900 flex">
+    <div className="h-[calc(100vh-4rem)] min-h-0 bg-gray-900 flex overflow-hidden">
       {/* Chat List - Always visible on desktop, conditional on mobile */}
-      <div className={`${showChatList ? "block" : "hidden"} lg:block`}>
+      <div
+        className={`${showChatList ? "block" : "hidden"} lg:block h-full min-h-0 shrink-0`}
+      >
         <ChatList
           chats={chats}
           selectedChat={selectedChat}
@@ -637,7 +641,9 @@ const ChatUI = ({ onBack }) => {
       </div>
 
       {/* Chat Window - Always visible on desktop, conditional on mobile */}
-      <div className={`${!showChatList ? "block" : "hidden"} lg:block flex-1`}>
+      <div
+        className={`${!showChatList ? "block" : "hidden"} lg:flex flex-1 min-w-0 min-h-0`}
+      >
         <ChatWindow
           chat={selectedChat}
           onBack={handleBackToList}
