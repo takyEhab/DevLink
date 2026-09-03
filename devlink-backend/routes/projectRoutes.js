@@ -1,9 +1,17 @@
 import express from "express";
-import { createProject, getProjectsByUser } from "../controllers/projectController.js";
+import {
+  createProject,
+  getAllProjects,
+  getProjectById,
+  getProjectsByUser,
+} from "../controllers/projectController.js";
 import { upload } from "../config/config.js";
-import authenticate  from "../middlewares/authMiddleware.js"; // assuming you have auth
+import authenticate from "../middlewares/authMiddleware.js"; // assuming you have auth
 
 const router = express.Router();
+
+router.get("/", getAllProjects);
+router.get("/id/:projectId", getProjectById);
 
 router.post("/", authenticate, upload.single("image"), createProject);
 router.get("/:userId", getProjectsByUser);

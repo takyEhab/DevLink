@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Filter,
@@ -30,8 +30,10 @@ import {
   Zap,
   Target,
   Briefcase,
+  UserRound,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import api from "../services/api";
 
 // Enhanced UI components with custom styling
 const Button = ({
@@ -125,7 +127,7 @@ const Select = ({ className = "", children, ...props }) => (
 );
 
 // Enhanced talent profiles data with more details
-const talentProfiles = [
+const _talentProfiles = [
   {
     id: 1,
     name: "Sarah Johnson",
@@ -377,6 +379,8 @@ const availabilityOptions = ["All", "Available", "Busy", "Unavailable"];
 const hourlyRateRanges = ["All", "$0-50", "$50-100", "$100-150", "$150+"];
 
 const TalentDiscovery = () => {
+  const [talentProfiles, setTalentProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedExperience, setSelectedExperience] = useState("All");
@@ -385,15 +389,52 @@ const TalentDiscovery = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("rating");
 
+  useEffect(() => {
+    const loadProfiles = async () => {
+      try {
+        const response = await api.get("/profile");
+        const profiles = response.data.data.profiles.map((profile) => ({
+          id: profile.user.id,
+          name: profile.user.name,
+          title: profile.title || "Developer",
+          location: profile.location || "Location not specified",
+          avatar: null,
+          rating: 0,
+          reviews: 0,
+          hourlyRate: 0,
+          availability: "Available",
+          experience: "Experience not specified",
+          projects: profile.projectCount || 0,
+          skills: profile.skills || [],
+          specialties: [],
+          languages: [],
+          education: profile.education || "Education not specified",
+          featured: false,
+          verified: false,
+          premium: false,
+          recentProjects: [],
+          bio: profile.bio || "This developer has not added a bio yet.",
+        }));
+        setTalentProfiles(profiles);
+      } catch (error) {
+        console.error("Failed to load developers", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfiles();
+  }, []);
+
   const filteredTalent = talentProfiles.filter((talent) => {
     const matchesSearch =
       talent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       talent.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       talent.skills.some((skill) =>
-        skill.toLowerCase().includes(searchTerm.toLowerCase())
+        skill.toLowerCase().includes(searchTerm.toLowerCase()),
       ) ||
       talent.specialties.some((specialty) =>
-        specialty.toLowerCase().includes(searchTerm.toLowerCase())
+        specialty.toLowerCase().includes(searchTerm.toLowerCase()),
       ) ||
       talent.location.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -402,10 +443,10 @@ const TalentDiscovery = () => {
       (selectedCategory === "Featured" && talent.featured) ||
       (selectedCategory === "Premium" && talent.premium) ||
       talent.skills.some((skill) =>
-        skill.toLowerCase().includes(selectedCategory.toLowerCase())
+        skill.toLowerCase().includes(selectedCategory.toLowerCase()),
       ) ||
       talent.specialties.some((specialty) =>
-        specialty.toLowerCase().includes(selectedCategory.toLowerCase())
+        specialty.toLowerCase().includes(selectedCategory.toLowerCase()),
       );
 
     const matchesExperience =
@@ -642,216 +683,247 @@ const TalentDiscovery = () => {
       <section className="relative py-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-10">
-            {sortedTalent.map((talent, index) => (
-              <Card
-                key={talent.id}
-                className="group hover:scale-[1.02] transition-all duration-700 hover:shadow-2xl hover:shadow-emerald-500/20"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <div className="p-8">
-                  {/* Enhanced Talent Header */}
-                  <div className="flex items-start gap-6 mb-8">
-                    <div className="relative">
-                      <img
-                        src={talent.avatar}
-                        alt={talent.name}
-                        className="w-24 h-24 rounded-2xl border-2 border-slate-600 group-hover:border-emerald-500/50 transition-all duration-500 group-hover:scale-110"
-                      />
-                      {talent.verified && (
-                        <div className="absolute -bottom-2 -right-2">
-                          <CheckCircle className="w-6 h-6 text-emerald-400 bg-slate-900 rounded-full p-1" />
-                        </div>
-                      )}
-                      {talent.featured && (
-                        <div className="absolute -top-3 -left-3">
-                          <Badge variant="warning" className="text-xs">
-                            <Star className="w-3 h-3 mr-1 fill-current" />
-                            Featured
-                          </Badge>
-                        </div>
-                      )}
-                      {talent.premium && (
-                        <div className="absolute -top-3 -right-3">
-                          <Badge variant="premium" className="text-xs">
-                            <Sparkles className="w-3 h-3 mr-1" />
-                            Premium
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <Link
-                            to={`/developer/${talent.id}`}
-                            className="text-3xl font-bold text-white group-hover:text-emerald-400 transition-colors duration-300 hover:underline"
-                          >
-                            {talent.name}
-                          </Link>
-                          <p className="text-slate-400 text-lg">
-                            {talent.title}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10"
-                          >
-                            <Heart className="w-5 h-5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10"
-                          >
-                            <Share2 className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-6 text-sm text-slate-400 mb-4">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          {talent.location}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Star className="w-4 h-4 text-amber-400 fill-current" />
-                          {talent.rating} ({talent.reviews} reviews)
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4" />${talent.hourlyRate}
-                          /hr
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm">
-                        <Badge
-                          variant={
-                            talent.availability === "Available"
-                              ? "success"
-                              : talent.availability === "Busy"
-                              ? "warning"
-                              : "danger"
-                          }
-                        >
-                          {talent.availability}
-                        </Badge>
-                        <span className="text-slate-400">
-                          {talent.experience} experience
-                        </span>
-                        <span className="text-slate-400">
-                          {talent.projects} projects
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Enhanced Bio */}
-                  <p className="text-slate-300 text-sm mb-8 leading-relaxed">
-                    {talent.bio}
-                  </p>
-
-                  {/* Enhanced Skills */}
-                  <div className="mb-8">
-                    <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center">
-                      <Code className="w-4 h-4 mr-2" />
-                      Skills & Technologies
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {talent.skills.slice(0, 6).map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                      {talent.skills.length > 6 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{talent.skills.length - 6} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Enhanced Specialties */}
-                  <div className="mb-8">
-                    <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center">
-                      <Target className="w-4 h-4 mr-2" />
-                      Specialties
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {talent.specialties.map((specialty) => (
-                        <Badge
-                          key={specialty}
-                          variant="secondary"
-                          className="text-xs"
-                        >
-                          {specialty}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Enhanced Recent Projects */}
-                  <div className="mb-8">
-                    <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center">
-                      <Briefcase className="w-4 h-4 mr-2" />
-                      Recent Projects
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      {talent.recentProjects.map((project, idx) => (
-                        <div
-                          key={idx}
-                          className="relative overflow-hidden rounded-xl group/project"
-                        >
+            {loading ? (
+              <p className="text-center text-slate-400 py-20">
+                Loading developers...
+              </p>
+            ) : (
+              sortedTalent.map((talent, index) => (
+                <Card
+                  key={talent.id}
+                  className="group hover:scale-[1.02] transition-all duration-700 hover:shadow-2xl hover:shadow-emerald-500/20"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <div className="p-8">
+                    {/* Enhanced Talent Header */}
+                    <div className="flex items-start gap-6 mb-8">
+                      <div className="relative">
+                        {talent.avatar ? (
                           <img
-                            src={project.image}
-                            alt={project.title}
-                            className="w-full h-20 object-cover group-hover/project:scale-110 transition-transform duration-500"
+                            src={talent.avatar}
+                            alt={talent.name}
+                            className="w-24 h-24 rounded-2xl border-2 border-slate-600 group-hover:border-emerald-500/50 transition-all duration-500 group-hover:scale-110"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent opacity-0 group-hover/project:opacity-100 transition-opacity duration-300"></div>
-                          <div className="absolute bottom-2 left-3 text-white text-xs font-semibold">
-                            {project.title}
+                        ) : (
+                          <div className="w-24 h-24 rounded-2xl border-2 border-slate-600 bg-emerald-500/10 flex items-center justify-center">
+                            <UserRound className="w-10 h-10 text-emerald-300/70" />
+                          </div>
+                        )}
+                        {talent.verified && (
+                          <div className="absolute -bottom-2 -right-2">
+                            <CheckCircle className="w-6 h-6 text-emerald-400 bg-slate-900 rounded-full p-1" />
+                          </div>
+                        )}
+                        {talent.featured && (
+                          <div className="absolute -top-3 -left-3">
+                            <Badge variant="warning" className="text-xs">
+                              <Star className="w-3 h-3 mr-1 fill-current" />
+                              Featured
+                            </Badge>
+                          </div>
+                        )}
+                        {talent.premium && (
+                          <div className="absolute -top-3 -right-3">
+                            <Badge variant="premium" className="text-xs">
+                              <Sparkles className="w-3 h-3 mr-1" />
+                              Premium
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <Link
+                              to={`/developer/${talent.id}`}
+                              className="text-3xl font-bold text-white group-hover:text-emerald-400 transition-colors duration-300 hover:underline"
+                            >
+                              {talent.name}
+                            </Link>
+                            <p className="text-slate-400 text-lg">
+                              {talent.title}
+                            </p>
+                          </div>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10"
+                            >
+                              <Heart className="w-5 h-5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10"
+                            >
+                              <Share2 className="w-5 h-5" />
+                            </Button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* Enhanced Action Buttons */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-3">
-                      <Button variant="outline" size="sm">
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Message
-                      </Button>
-                      <Link to={`/developer/${talent.id}`}>
+                        <div className="flex items-center gap-6 text-sm text-slate-400 mb-4">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            {talent.location}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Star className="w-4 h-4 text-amber-400 fill-current" />
+                            {talent.rating} ({talent.reviews} reviews)
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />$
+                            {talent.hourlyRate}
+                            /hr
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm">
+                          <Badge
+                            variant={
+                              talent.availability === "Available"
+                                ? "success"
+                                : talent.availability === "Busy"
+                                  ? "warning"
+                                  : "danger"
+                            }
+                          >
+                            {talent.availability}
+                          </Badge>
+                          <span className="text-slate-400">
+                            {talent.experience} experience
+                          </span>
+                          <span className="text-slate-400">
+                            {talent.projects} projects
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Bio */}
+                    <p className="text-slate-300 text-sm mb-8 leading-relaxed">
+                      {talent.bio}
+                    </p>
+
+                    {/* Enhanced Skills */}
+                    <div className="mb-8">
+                      <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center">
+                        <Code className="w-4 h-4 mr-2" />
+                        Skills & Technologies
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {talent.skills.slice(0, 6).map((skill) => (
+                          <Badge
+                            key={skill}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
+                        {talent.skills.length > 6 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{talent.skills.length - 6} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Enhanced Specialties */}
+                    <div className="mb-8">
+                      <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center">
+                        <Target className="w-4 h-4 mr-2" />
+                        Specialties
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {talent.specialties.map((specialty) => (
+                          <Badge
+                            key={specialty}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {specialty}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Enhanced Recent Projects */}
+                    <div className="mb-8">
+                      <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center">
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Recent Projects
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        {talent.recentProjects.map((project, idx) => (
+                          <div
+                            key={idx}
+                            className="relative overflow-hidden rounded-xl group/project"
+                          >
+                            {project.image ? (
+                              <img
+                                src={project.image}
+                                alt={project.title}
+                                className="w-full h-20 object-cover group-hover/project:scale-110 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-20 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                <Code className="w-8 h-8 text-emerald-300/60" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent opacity-0 group-hover/project:opacity-100 transition-opacity duration-300"></div>
+                            <div className="absolute bottom-2 left-3 text-white text-xs font-semibold">
+                              {project.title}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Enhanced Action Buttons */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-3">
                         <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Profile
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Message
                         </Button>
-                      </Link>
-                    </div>
+                        <Link to={`/developer/${talent.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Profile
+                          </Button>
+                        </Link>
+                      </div>
 
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-10 w-10">
-                        <Github className="w-5 h-5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-10 w-10">
-                        <Linkedin className="w-5 h-5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-10 w-10">
-                        <Mail className="w-5 h-5" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10"
+                        >
+                          <Github className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10"
+                        >
+                          <Linkedin className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10"
+                        >
+                          <Mail className="w-5 h-5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Enhanced No Results */}

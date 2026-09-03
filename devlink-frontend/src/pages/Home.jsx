@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Github,
   Linkedin,
@@ -8,6 +8,7 @@ import {
   Star,
   Users,
   Code,
+  Image as ImageIcon,
   Search,
   TrendingUp,
   Award,
@@ -26,6 +27,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import api from "../services/api";
 
 // Custom UI components for Home page
 const Button = ({
@@ -110,7 +112,7 @@ const Input = ({ className = "", ...props }) => (
 );
 
 // Enhanced projects data with more details
-const projectsData = [
+const _projectsData = [
   {
     id: 1,
     title: "E-commerce Platform",
@@ -216,15 +218,30 @@ const categories = [
 ];
 
 const Home = () => {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const filteredProjects = projectsData.filter((project) => {
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const response = await api.get("/projects");
+        setProjects(response.data.data.projects);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
+  const filteredProjects = projects.filter((project) => {
     const matchesSearch =
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.technologies.some((tech) =>
-        tech.toLowerCase().includes(searchTerm.toLowerCase())
+        tech.toLowerCase().includes(searchTerm.toLowerCase()),
       ) ||
       project.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -234,7 +251,7 @@ const Home = () => {
       (selectedCategory === "Featured" && project.featured) ||
       (selectedCategory === "Premium" && project.premium) ||
       project.technologies.some((tech) =>
-        tech.toLowerCase().includes(selectedCategory.toLowerCase())
+        tech.toLowerCase().includes(selectedCategory.toLowerCase()),
       ) ||
       project.category.toLowerCase().includes(selectedCategory.toLowerCase());
 
@@ -340,116 +357,135 @@ const Home = () => {
       <section className="relative py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="space-y-10">
-            {filteredProjects.map((project, index) => (
-              <Card
-                key={project.id}
-                className="group hover:scale-[1.02] transition-all duration-700 hover:shadow-2xl hover:shadow-indigo-500/20"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <div className="flex gap-8 p-8">
-                  {/* Enhanced Project Image */}
-                  <div className="flex-shrink-0 relative">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-48 h-32 object-cover rounded-2xl border border-zinc-600/50 group-hover:border-indigo-500/50 transition-all duration-500 group-hover:scale-110"
-                    />
-                    {project.featured && (
-                      <div className="absolute -top-3 -left-3">
-                        <Badge variant="warning" className="text-xs">
-                          <Star className="w-3 h-3 mr-1 fill-current" />
-                          Featured
-                        </Badge>
-                      </div>
-                    )}
-                    {project.premium && (
-                      <div className="absolute -top-3 -right-3">
-                        <Badge variant="premium" className="text-xs">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          Premium
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Enhanced Project Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-3xl font-bold text-white group-hover:text-indigo-400 transition-colors duration-300 mb-2">
-                          {project.title}
-                        </h3>
-                        <Badge variant="outline" className="text-xs mb-3">
-                          {project.category}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                        >
-                          <Heart className="w-5 h-5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                        >
-                          <Share2 className="w-5 h-5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <p className="text-zinc-300 text-sm mb-6 leading-relaxed">
-                      {project.description}
-                    </p>
-
-                    {/* Enhanced Technology Tags */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {project.technologies.map((tech) => (
-                        <Badge key={tech} variant="outline" className="text-xs">
-                          {tech}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Enhanced Project Stats and Author */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-6 text-sm text-zinc-400">
-                        <div className="flex items-center gap-2">
-                          <Heart className="w-4 h-4" />
-                          <span>{project.likes}</span>
+            {loading ? (
+              <p className="text-center text-zinc-400 py-20">
+                Loading projects...
+              </p>
+            ) : filteredProjects.length === 0 ? (
+              <p className="text-center text-zinc-400 py-20">
+                No projects found.
+              </p>
+            ) : (
+              filteredProjects.map((project, index) => (
+                <Card
+                  key={project.id}
+                  className="group hover:scale-[1.02] transition-all duration-700 hover:shadow-2xl hover:shadow-indigo-500/20"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <div className="flex gap-8 p-8">
+                    {/* Enhanced Project Image */}
+                    <div className="flex-shrink-0 relative">
+                      {project.image ? (
+                        <img
+                          src={project.image}
+                          alt={project.title}
+                          className="w-48 h-32 object-cover rounded-2xl border border-zinc-600/50 group-hover:border-indigo-500/50 transition-all duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-48 h-32 rounded-2xl border border-zinc-600/50 bg-gradient-to-br from-indigo-500/20 to-pink-500/20 flex items-center justify-center">
+                          <ImageIcon className="w-10 h-10 text-indigo-300/70" />
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Eye className="w-4 h-4" />
-                          <span>{project.views}</span>
+                      )}
+                      {project.featured && (
+                        <div className="absolute -top-3 -left-3">
+                          <Badge variant="warning" className="text-xs">
+                            <Star className="w-3 h-3 mr-1 fill-current" />
+                            Featured
+                          </Badge>
                         </div>
-                        <p className="text-indigo-400 font-semibold">
-                          By {project.author}
-                        </p>
+                      )}
+                      {project.premium && (
+                        <div className="absolute -top-3 -right-3">
+                          <Badge variant="premium" className="text-xs">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Premium
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Enhanced Project Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-3xl font-bold text-white group-hover:text-indigo-400 transition-colors duration-300 mb-2">
+                            {project.title}
+                          </h3>
+                          <Badge variant="outline" className="text-xs mb-3">
+                            {project.category}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10"
+                          >
+                            <Heart className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10"
+                          >
+                            <Share2 className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </Button>
+                        </div>
                       </div>
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="group-hover:bg-indigo-600 group-hover:border-indigo-600 group-hover:text-white transition-all duration-300"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Project
-                      </Button>
+                      <p className="text-zinc-300 text-sm mb-6 leading-relaxed">
+                        {project.description}
+                      </p>
+
+                      {/* Enhanced Technology Tags */}
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {project.technologies.map((tech) => (
+                          <Badge
+                            key={tech}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* Enhanced Project Stats and Author */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6 text-sm text-zinc-400">
+                          <div className="flex items-center gap-2">
+                            <Heart className="w-4 h-4" />
+                            <span>{project.likes}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-4 h-4" />
+                            <span>{project.views}</span>
+                          </div>
+                          <p className="text-indigo-400 font-semibold">
+                            By {project.author}
+                          </p>
+                        </div>
+
+                        <Link
+                          to={`/project/${project.id}`}
+                          className="inline-flex items-center h-9 py-1.5 px-3 text-xs rounded-xl border-2 border-indigo-500/30 text-indigo-400 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all duration-300"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View Project
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
 
             {/* Enhanced No Results */}
             {filteredProjects.length === 0 && (

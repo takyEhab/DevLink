@@ -10,6 +10,24 @@ const normalizeSkills = (value) => {
 };
 
 const Profile = {
+  async findAll() {
+    const { query } = await import("../database/mongodb.js");
+    const [rows] = await query(
+      `SELECT p.*, u.name, u.email,
+              (SELECT COUNT(*) FROM projects pr WHERE pr.user_id = p.user_id) AS project_count
+       FROM profiles p
+       JOIN users u ON u.id = p.user_id
+       ORDER BY p.created_at DESC`,
+    );
+
+    return rows.map((profile) => ({
+      ...profile,
+      skills: normalizeSkills(profile.skills),
+      user: { id: profile.user_id, name: profile.name, email: profile.email },
+      projectCount: Number(profile.project_count),
+    }));
+  },
+
   async findOneByUserId(userId) {
     const { query } = await import("../database/mongodb.js");
     const [rows] = await query(

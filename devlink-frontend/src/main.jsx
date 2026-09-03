@@ -9,6 +9,7 @@ import FindDevelopers from "./pages/FindDevelopers";
 import DeveloperProfile from "./pages/DeveloperProfile";
 import Chat from "./components/chat-ui";
 import NotFound from "./pages/NotFound";
+import ProjectDetails from "./pages/ProjectDetails";
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
       { path: "developers", element: <FindDevelopers /> },
       { path: "developer/:id", element: <DeveloperProfile /> },
       { path: "messages", element: <Chat /> },
+      { path: "project/:id", element: <ProjectDetails /> },
       { path: "*", element: <NotFound /> },
     ],
   },
@@ -28,5 +30,5 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <UserProvider>
     <RouterProvider router={router} />
-  </UserProvider>
+  </UserProvider>,
 );

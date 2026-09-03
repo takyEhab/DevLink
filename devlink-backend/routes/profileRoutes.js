@@ -3,10 +3,13 @@ import {
   getMyProfile,
   createOrUpdateProfile,
   getProfileByUserId,
+  getProfiles,
 } from "../controllers/profileController.js";
 import authenticate from "../middlewares/authMiddleware.js";
 
 const profileRouter = Router();
+
+profileRouter.get("/", getProfiles);
 
 // @route   GET /api/profile/me
 // @desc    Get current logged-in user's profile

@@ -15,6 +15,7 @@ import {
   File,
   Check,
   CheckCheck,
+  UserRound,
 } from "lucide-react";
 import api, { API_URL } from "../services/api";
 import { UserContext } from "../context/UserContext";
@@ -79,6 +80,30 @@ const Badge = ({ children, variant = "default", className = "", ...props }) => {
     >
       {children}
     </div>
+  );
+};
+
+const ChatAvatar = ({ avatar, name, className }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (!avatar || imageFailed) {
+    return (
+      <div
+        className={`${className} bg-blue-500/15 border border-blue-400/30 flex items-center justify-center`}
+        aria-label={`${name} avatar placeholder`}
+      >
+        <UserRound className="w-1/2 h-1/2 text-blue-300" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={avatar}
+      alt={name}
+      className={className}
+      onError={() => setImageFailed(true)}
+    />
   );
 };
 
@@ -278,9 +303,9 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onBack }) => {
             <div className="flex items-start space-x-3">
               {/* Avatar */}
               <div className="relative">
-                <img
-                  src={chat.avatar || "/placeholder.svg"}
-                  alt={chat.name}
+                <ChatAvatar
+                  avatar={chat.avatar}
+                  name={chat.name}
                   className="w-12 h-12 rounded-full"
                 />
                 {chat.online && (
@@ -415,9 +440,9 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="relative">
-              <img
-                src={chat.avatar || "/placeholder.svg"}
-                alt={chat.name}
+              <ChatAvatar
+                avatar={chat.avatar}
+                name={chat.name}
                 className="w-10 h-10 rounded-full"
               />
               {chat.online && (
