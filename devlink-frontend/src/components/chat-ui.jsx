@@ -4,23 +4,33 @@ import { useState, useRef, useEffect, useContext } from "react";
 import { io } from "socket.io-client";
 import {
   Send,
-  Paperclip,
   Smile,
-  Phone,
-  Video,
-  MoreVertical,
   Search,
   ArrowLeft,
-  Image,
-  File,
   Check,
   CheckCheck,
   UserRound,
+  Info,
 } from "lucide-react";
 import api, { API_URL } from "../services/api";
 import { UserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
+
+const formatChatDate = (value) => {
+  if (!value || ["Just now", "Yesterday"].includes(value)) return value;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+};
 
 // Reusing the same UI components
 const Button = ({
@@ -273,9 +283,7 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onBack }) => {
             Back
           </Button>
           <h2 className="text-xl font-semibold text-white">Messages</h2>
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+          <span className="text-xs text-gray-500">{chats.length} chats</span>
         </div>
 
         {/* Search */}
@@ -320,7 +328,7 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onBack }) => {
                     {chat.name}
                   </h3>
                   <span className="text-xs text-gray-400">
-                    {chat.timestamp}
+                    {formatChatDate(chat.timestamp)}
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mb-1">
@@ -380,7 +388,9 @@ const Message = ({ message, isMe }) => {
         <div
           className={`flex items-center mt-1 space-x-1 ${isMe ? "justify-end" : "justify-start"}`}
         >
-          <span className="text-xs text-gray-400">{message.timestamp}</span>
+          <span className="text-xs text-gray-400">
+            {formatChatDate(message.timestamp)}
+          </span>
           {isMe && getStatusIcon(message.status)}
         </div>
       </div>
@@ -391,7 +401,6 @@ const Message = ({ message, isMe }) => {
 // Chat Window Component
 const ChatWindow = ({ chat, onBack, onSendMessage }) => {
   const [newMessage, setNewMessage] = useState("");
-  const [showAttachments, setShowAttachments] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -458,15 +467,18 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon">
-              <Phone className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Video className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="w-4 h-4" />
+          <div className="flex items-center space-x-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              title="Conversation information"
+              aria-label="Conversation information"
+              onClick={() =>
+                toast.info(`${chat.name} - ${chat.role || "Developer"}`)
+              }
+            >
+              <Info className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -484,36 +496,11 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Attachment Menu */}
-      {showAttachments && (
-        <div className="px-4 py-2 border-t border-gray-700 bg-gray-800">
-          <div className="flex space-x-4">
-            <Button variant="ghost" size="sm" className="flex-col h-auto py-2">
-              <Image className="w-6 h-6 mb-1" />
-              <span className="text-xs">Photo</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="flex-col h-auto py-2">
-              <File className="w-6 h-6 mb-1" />
-              <span className="text-xs">Document</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Message Input */}
       <div className="shrink-0 p-3 sm:p-4 border-t border-gray-700 bg-gray-800">
         <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
           <div className="flex-1">
             <div className="flex items-center space-x-2 bg-gray-700 rounded-lg px-3 py-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setShowAttachments(!showAttachments)}
-              >
-                <Paperclip className="w-4 h-4" />
-              </Button>
               <input
                 type="text"
                 placeholder="Type a message..."
