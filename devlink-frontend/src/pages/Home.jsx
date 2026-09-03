@@ -13,8 +13,6 @@ import {
   TrendingUp,
   Award,
   ExternalLink,
-  Eye,
-  Heart,
   Share2,
   Sparkles,
   Zap,
@@ -26,8 +24,9 @@ import {
   Database,
   Smartphone,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { toast } from "react-toastify";
 
 // Custom UI components for Home page
 const Button = ({
@@ -218,6 +217,7 @@ const categories = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -257,6 +257,25 @@ const Home = () => {
 
     return matchesSearch && matchesCategory;
   });
+
+  const handleShareProject = async (event, project) => {
+    event.stopPropagation();
+    const projectUrl = `${window.location.origin}/project/${project.id}`;
+
+    try {
+      await navigator.clipboard.writeText(projectUrl);
+      toast.success("Project link copied!");
+    } catch {
+      // Clipboard access can be unavailable in some browsers or contexts.
+      const textArea = document.createElement("textarea");
+      textArea.value = projectUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      textArea.remove();
+      toast.success("Project link copied!");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
@@ -371,6 +390,15 @@ const Home = () => {
                   key={project.id}
                   className="group hover:scale-[1.02] transition-all duration-700 hover:shadow-2xl hover:shadow-indigo-500/20"
                   style={{ animationDelay: `${index * 150}ms` }}
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => navigate(`/project/${project.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(`/project/${project.id}`);
+                    }
+                  }}
                 >
                   <div className="flex gap-8 p-8">
                     {/* Enhanced Project Image */}
@@ -415,27 +443,19 @@ const Home = () => {
                             {project.category}
                           </Badge>
                         </div>
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="flex gap-2">
                           <Button
+                            type="button"
                             variant="ghost"
                             size="icon"
                             className="h-10 w-10"
-                          >
-                            <Heart className="w-5 h-5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10"
+                            title="Copy project link"
+                            aria-label="Copy project link"
+                            onClick={(event) =>
+                              handleShareProject(event, project)
+                            }
                           >
                             <Share2 className="w-5 h-5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10"
-                          >
-                            <Eye className="w-5 h-5" />
                           </Button>
                         </div>
                       </div>
@@ -457,29 +477,22 @@ const Home = () => {
                         ))}
                       </div>
 
-                      {/* Enhanced Project Stats and Author */}
+                      {/* Project Author */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-6 text-sm text-zinc-400">
-                          <div className="flex items-center gap-2">
-                            <Heart className="w-4 h-4" />
-                            <span>{project.likes}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Eye className="w-4 h-4" />
-                            <span>{project.views}</span>
-                          </div>
-                          <p className="text-indigo-400 font-semibold">
-                            By {project.author}
-                          </p>
-                        </div>
-
-                        <Link
-                          to={`/project/${project.id}`}
-                          className="inline-flex items-center h-9 py-1.5 px-3 text-xs rounded-xl border-2 border-indigo-500/30 text-indigo-400 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all duration-300"
+                        <p className="text-indigo-400 font-semibold">
+                          By {project.author}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            navigate(`/project/${project.id}`);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-indigo-500/40 px-3 py-1.5 text-xs font-medium text-indigo-300 hover:bg-indigo-500/20 hover:text-white transition-colors"
                         >
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          View Project
-                        </Link>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Open project
+                        </button>
                       </div>
                     </div>
                   </div>

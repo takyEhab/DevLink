@@ -32,6 +32,29 @@ const formatChatDate = (value) => {
   }).format(date);
 };
 
+const chatEmojis = [
+  "😀",
+  "😂",
+  "😍",
+  "😊",
+  "😉",
+  "🥳",
+  "😎",
+  "🤔",
+  "😅",
+  "😭",
+  "😡",
+  "👍",
+  "👎",
+  "❤️",
+  "🔥",
+  "🎉",
+  "✨",
+  "🚀",
+  "💯",
+  "🙏",
+];
+
 // Reusing the same UI components
 const Button = ({
   children,
@@ -401,7 +424,9 @@ const Message = ({ message, isMe }) => {
 // Chat Window Component
 const ChatWindow = ({ chat, onBack, onSendMessage }) => {
   const [newMessage, setNewMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -419,6 +444,12 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
 
     onSendMessage(content);
     setNewMessage("");
+  };
+
+  const handleEmojiSelect = (emoji) => {
+    setNewMessage((message) => `${message}${emoji}`);
+    setShowEmojiPicker(false);
+    messageInputRef.current?.focus();
   };
 
   if (!chat) {
@@ -497,11 +528,29 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
       </div>
 
       {/* Message Input */}
-      <div className="shrink-0 p-3 sm:p-4 border-t border-gray-700 bg-gray-800">
+      <div className="relative shrink-0 p-3 sm:p-4 border-t border-gray-700 bg-gray-800">
+        {showEmojiPicker && (
+          <div className="absolute bottom-full right-3 mb-2 w-64 rounded-xl border border-gray-600 bg-gray-800 p-3 shadow-2xl">
+            <div className="grid grid-cols-5 gap-1">
+              {chatEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => handleEmojiSelect(emoji)}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-xl hover:bg-gray-700 transition-colors"
+                  aria-label={`Add ${emoji} emoji`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
           <div className="flex-1">
             <div className="flex items-center space-x-2 bg-gray-700 rounded-lg px-3 py-2">
               <input
+                ref={messageInputRef}
                 type="text"
                 placeholder="Type a message..."
                 value={newMessage}
@@ -513,6 +562,9 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
+                title="Add emoji"
+                aria-label="Add emoji"
+                onClick={() => setShowEmojiPicker((visible) => !visible)}
               >
                 <Smile className="w-4 h-4" />
               </Button>
