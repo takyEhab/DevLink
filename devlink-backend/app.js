@@ -1,6 +1,8 @@
 import express from "express";
+import { createServer } from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { Server } from "socket.io";
 import connectToDatabase from "./database/mongodb.js";
 import errorMiddleware from "./middlewares/errorMiddleware.js";
 import { authorizeAdmin } from "./middlewares/authorizeAdmin.js";
@@ -8,13 +10,21 @@ import authenticate from "./middlewares/authMiddleware.js";
 import userRouter from "./routes/userRoutes.js";
 import profileRouter from "./routes/profileRoutes.js";
 import projectRouter from "./routes/projectRoutes.js";
+import chatRouter from "./routes/chatRoutes.js";
+import registerChatSocket from "./sockets/chatSocket.js";
 
 const app = express();
+const httpServer = createServer(app);
 const port = Number(process.env.PORT || 3000);
+const frontendOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+
+const io = new Server(httpServer, {
+  cors: { origin: frontendOrigin, credentials: true },
+});
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: frontendOrigin,
     credentials: true,
   }),
 );
@@ -26,6 +36,7 @@ app.use(cookieParser());
 app.use("/api/users", userRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/projects", projectRouter);
+app.use("/api/chats", chatRouter);
 
 app.use(errorMiddleware);
 
@@ -44,7 +55,8 @@ app.get("/check-cookie", authenticate, (req, res) => {
 const startServer = async () => {
   try {
     await connectToDatabase();
-    app.listen(port, () => {
+    registerChatSocket(io);
+    httpServer.listen(port, () => {
       console.log(`Example app listening on port ${port}!`);
     });
   } catch (error) {

@@ -26,7 +26,7 @@ import {
   Plus,
   Info,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
@@ -238,6 +238,7 @@ const DeveloperProfile = () => {
     technologies: "React",
   });
   const [myDeveloper, setMyDeveloper] = useState(null);
+  const [isContacting, setIsContacting] = useState(false);
   const [isSetupSaving, setIsSetupSaving] = useState(false);
   const [setupForm, setSetupForm] = useState({
     title: "",
@@ -250,6 +251,7 @@ const DeveloperProfile = () => {
     portfolio: "",
   });
   const isOwnProfile = String(user?.id) === id;
+  const navigate = useNavigate();
 
   // Get current user from context
   const fetchDeveloper = async () => {
@@ -361,6 +363,28 @@ const DeveloperProfile = () => {
     } catch (err) {
       toast.error("Failed to copy link.");
       toast.error(err.message);
+    }
+  };
+
+  const handleContactDeveloper = async () => {
+    if (!user) {
+      toast.error("Please sign in to send messages.");
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      setIsContacting(true);
+      const response = await api.post("/chats", { participantId: Number(id) });
+      navigate("/messages", {
+        state: { conversationId: response.data.data.conversation.id },
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Unable to open this conversation.",
+      );
+    } finally {
+      setIsContacting(false);
     }
   };
   const addProject = async () => {
@@ -626,9 +650,14 @@ const DeveloperProfile = () => {
                   ) : (
                     // Other developer's profile - show contact and save buttons
                     <>
-                      <Button size="lg" className="w-full">
+                      <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={handleContactDeveloper}
+                        disabled={isContacting}
+                      >
                         <MessageCircle className="w-5 h-5 mr-2" />
-                        Contact Developer
+                        {isContacting ? "Opening Chat..." : "Send Message"}
                       </Button>
                       <Button variant="outline" size="lg" className="w-full">
                         <Heart className="w-5 h-5 mr-2" />

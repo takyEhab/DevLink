@@ -17,7 +17,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.2",
-    "mysql2": "^3.24.2"
+    "mysql2": "^3.24.2",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
