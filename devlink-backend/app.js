@@ -17,8 +17,8 @@ import notificationRouter from "./routes/notificationRoutes.js";
 const app = express();
 const httpServer = createServer(app);
 const port = Number(process.env.PORT || 3000);
-const frontendOrigin = process.env.FRONTEND_URL || "https://dev-link-frontend-mu.vercel.app";
-
+const frontendOrigin = "https://dev-link-frontend-mu.vercel.app";
+// process.env.FRONTEND_URL ||
 const io = new Server(httpServer, {
   cors: { origin: frontendOrigin, credentials: true },
 });
