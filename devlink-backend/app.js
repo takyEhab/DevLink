@@ -34,11 +34,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use("/api/users", userRouter);
-app.use("/api/profile", profileRouter);
-app.use("/api/projects", projectRouter);
-app.use("/api/chats", chatRouter);
-app.use("/api/notifications", notificationRouter);
+app.use("/users", userRouter);
+app.use("/profile", profileRouter);
+app.use("/projects", projectRouter);
+app.use("/chats", chatRouter);
+app.use("/notifications", notificationRouter);
 
 app.use(errorMiddleware);
 
