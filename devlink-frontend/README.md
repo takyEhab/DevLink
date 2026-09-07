@@ -2,13 +2,17 @@
 
 ## API Configuration
 
-Create a `.env` file in this directory and set the backend API base URL:
+For local development, copy `.env.development.example` to `.env.development`.
+For production, copy `.env.production.example` to `.env.production` and replace
+the placeholder backend URL.
 
 ```env
 VITE_API_URL=http://localhost:3000/api
+VITE_SOCKET_URL=http://localhost:3000
 ```
 
-Production deployments should replace the value with the deployed backend URL.
+Vite loads the development file for `npm run dev` and the production file for
+`npm run build`.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

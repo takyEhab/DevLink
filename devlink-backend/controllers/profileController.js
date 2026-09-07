@@ -3,7 +3,11 @@ import Profile from "../models/profile.js";
 export const getProfiles = async (req, res, next) => {
   try {
     const profiles = await Profile.findAll();
-    res.json({ success: true, data: { profiles } });
+
+    res.json({
+      success: true,
+      data: { profiles },
+    });
   } catch (error) {
     next(error);
   }
@@ -38,45 +42,76 @@ export const createOrUpdateProfile = async (req, res, next) => {
       education,
       github,
       portfolio,
-      linkedIn,
+      linkedin,
+      avatar,
     } = req.body;
 
+    // Normalize skills
+    let normalizedSkills = [];
+
+    if (Array.isArray(skills)) {
+      normalizedSkills = skills
+        .filter((skill) => typeof skill === "string")
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+    } else if (typeof skills === "string") {
+      normalizedSkills = skills
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+    }
+
+    // Validate required fields
     const missingFields = [];
-    if (!title?.trim()) missingFields.push("title");
-    if (!location?.trim()) missingFields.push("location");
-    if (!bio?.trim()) missingFields.push("bio");
-    if (
-      !Array.isArray(skills) ||
-      skills.filter((skill) => skill?.trim()).length === 0
-    ) {
+
+    if (!title?.trim()) {
+      missingFields.push("title");
+    }
+
+    if (!location?.trim()) {
+      missingFields.push("location");
+    }
+
+    if (!bio?.trim()) {
+      missingFields.push("bio");
+    }
+
+    if (normalizedSkills.length === 0) {
       missingFields.push("skills");
     }
 
     if (missingFields.length > 0) {
       return res.status(400).json({
+        success: false,
         error: `Required profile fields missing: ${missingFields.join(", ")}`,
       });
     }
 
-    const existingProfile = await Profile.findOneByUserId(req.user.userId);
+    // Check if profile already exists
+    const existingProfile = await Profile.findOneByUserId(
+      req.user.userId
+    );
 
     const profileData = {
       userId: req.user.userId,
-      title,
-      location,
-      bio,
-      skills,
-      education,
-      github,
-      portfolio,
-      linkedIn,
+      title: title.trim(),
+      location: location.trim(),
+      bio: bio.trim(),
+      skills: JSON.stringify(normalizedSkills),
+      education: education?.trim() || null,
+      github: github?.trim() || null,
+      portfolio: portfolio?.trim() || null,
+      linkedin: linkedin?.trim() || null,
+      avatar: avatar?.trim() || null,
     };
 
+    // Update existing profile
     if (existingProfile) {
       const profile = await Profile.updateByUserId(
         req.user.userId,
-        profileData,
+        profileData
       );
+
       return res.status(200).json({
         success: true,
         message: "Profile updated successfully",
@@ -84,6 +119,7 @@ export const createOrUpdateProfile = async (req, res, next) => {
       });
     }
 
+    // Create new profile
     const profile = await Profile.create(profileData);
 
     res.status(201).json({

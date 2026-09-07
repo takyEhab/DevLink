@@ -25,6 +25,7 @@ import {
   Edit,
   Plus,
   Info,
+  UserRound,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
@@ -580,18 +581,19 @@ const DeveloperProfile = () => {
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Avatar */}
             <div className="relative">
-              <img
-                src={
-                  developer.avatar ||
-                  "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face"
-                }
-                alt={developer.user.name}
-                className="w-32 h-32 md:w-40 md:h-40 rounded-2xl border-4 border-slate-800 shadow-2xl"
-                onError={(e) => {
-                  e.target.src =
-                    "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face";
-                }}
-              />
+              
+                        {developer.avatar ? (
+                          <img
+                            src={developer.avatar}
+                            alt={developer.name}
+                            className="w-24 h-24 rounded-2xl border-2 border-slate-600 group-hover:border-emerald-500/50 transition-all duration-500 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-32 h-32 rounded-2xl border-2 border-slate-600 bg-emerald-500/10 flex items-center justify-center">
+                            <UserRound className="w-10 h-10 text-emerald-300/70" />
+                          </div>
+                        )}
+
             </div>
 
             {/* Profile Info */}

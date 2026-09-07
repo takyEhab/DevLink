@@ -12,10 +12,10 @@ import {
   UserRound,
   Info,
 } from "lucide-react";
-import api, { API_URL } from "../services/api";
+import api, { SOCKET_URL } from "../services/api";
 import { UserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const formatChatDate = (value) => {
   if (!value || ["Just now", "Yesterday"].includes(value)) return value;
@@ -479,18 +479,35 @@ const ChatWindow = ({ chat, onBack, onSendMessage }) => {
             <Button variant="ghost" onClick={onBack} className="lg:hidden">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div className="relative">
-              <ChatAvatar
-                avatar={chat.avatar}
-                name={chat.name}
-                className="w-10 h-10 rounded-full"
-              />
-              {chat.online && (
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-gray-800 rounded-full"></div>
-              )}
-            </div>
+            <Link
+              to={chat.otherUserId ? `/developer/${chat.otherUserId}` : "#"}
+              title="Open developer profile"
+              onClick={(event) => {
+                if (!chat.otherUserId) event.preventDefault();
+              }}
+            >
+              <div className="relative">
+                <ChatAvatar
+                  avatar={chat.avatar}
+                  name={chat.name}
+                  className="w-10 h-10 rounded-full"
+                />
+                {chat.online && (
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-gray-800 rounded-full"></div>
+                )}
+              </div>
+            </Link>
             <div>
-              <h3 className="text-sm font-medium text-white">{chat.name}</h3>
+              <Link
+                to={chat.otherUserId ? `/developer/${chat.otherUserId}` : "#"}
+                title="Open developer profile"
+                onClick={(event) => {
+                  if (!chat.otherUserId) event.preventDefault();
+                }}
+                className="text-sm font-medium text-white hover:text-blue-300 transition-colors"
+              >
+                {chat.name}
+              </Link>
               <p className="text-xs text-gray-400">
                 {chat.role} at {chat.company}
                 {chat.online && " • Online"}
@@ -609,17 +626,19 @@ const ChatUI = ({ onBack }) => {
   }, []);
 
   useEffect(() => {
-    const conversationId = location.state?.conversationId;
+    const conversationId =
+      location.state?.conversationId ||
+      new URLSearchParams(location.search).get("conversation");
     const chat = chats.find(
       (item) => String(item.id) === String(conversationId),
     );
     if (chat) handleSelectChat(chat);
-  }, [chats, location.state?.conversationId]);
+  }, [chats, location.search, location.state?.conversationId]);
 
   useEffect(() => {
     if (!user) return undefined;
 
-    const socket = io(API_URL.replace(/\/api$/, ""), { withCredentials: true });
+    const socket = io(SOCKET_URL, { withCredentials: true });
     socketRef.current = socket;
     socket.on("new_message", (message) => {
       setChats((currentChats) =>

@@ -66,6 +66,12 @@ const Chat = {
     return rows[0] || null;
   },
 
+  getOtherParticipant(conversation, userId) {
+    return Number(conversation.participant_one_id) === Number(userId)
+      ? conversation.participant_two_id
+      : conversation.participant_one_id;
+  },
+
   async listConversations(userId) {
     const [rows] = await query(
       `SELECT c.id, c.updated_at,
@@ -89,6 +95,7 @@ const Chat = {
 
     return rows.map((conversation) => ({
       id: conversation.id,
+      otherUserId: conversation.other_id,
       name: conversation.other_name,
       avatar: null,
       role: conversation.other_title || "Developer",

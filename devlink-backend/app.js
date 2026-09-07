@@ -12,6 +12,7 @@ import profileRouter from "./routes/profileRoutes.js";
 import projectRouter from "./routes/projectRoutes.js";
 import chatRouter from "./routes/chatRoutes.js";
 import registerChatSocket from "./sockets/chatSocket.js";
+import notificationRouter from "./routes/notificationRoutes.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -37,6 +38,7 @@ app.use("/api/users", userRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/chats", chatRouter);
+app.use("/api/notifications", notificationRouter);
 
 app.use(errorMiddleware);
 
@@ -66,3 +68,9 @@ const startServer = async () => {
 };
 
 startServer();
+
+// DB_HOST=localhost
+// DB_PORT=3306
+// DB_USER=root
+// DB_PASSWORD=1234
+// DB_NAME=devlink

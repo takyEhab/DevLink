@@ -4,19 +4,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file=.env --watch app",
-    "start": "node app"
+    "dev": "node --env-file-if-exists=.env --watch app.js",
+    "start": "node --env-file-if-exists=.env app.js"
   },
   "dependencies": {
     "@arcjet/inspect": "^1.0.0-beta.9",
     "@arcjet/node": "^1.0.0-beta.9",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.2",
+    "multer": "^2.3.0",
+    "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.24.2",
     "socket.io": "^4.8.1"
   },

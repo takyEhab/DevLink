@@ -398,7 +398,7 @@ const TalentDiscovery = () => {
           name: profile.user.name,
           title: profile.title || "Developer",
           location: profile.location || "Location not specified",
-          avatar: null,
+          avatar: profile.avatar || null,
           rating: 0,
           reviews: 0,
           hourlyRate: 0,

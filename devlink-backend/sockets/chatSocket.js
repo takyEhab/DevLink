@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import Chat from "../models/chat.js";
+import Notification from "../models/notification.js";
 
 const parseCookies = (cookieHeader = "") =>
   Object.fromEntries(
@@ -30,6 +31,8 @@ export default function registerChatSocket(io) {
   });
 
   io.on("connection", (socket) => {
+    socket.join(`user:${socket.user.userId}`);
+
     socket.on(
       "join_conversation",
       async (conversationId, callback = () => {}) => {
@@ -68,7 +71,20 @@ export default function registerChatSocket(io) {
             socket.user.userId,
             cleanContent,
           );
+          const recipientId = Chat.getOtherParticipant(
+            conversation,
+            socket.user.userId,
+          );
+          const notification = await Notification.create({
+            userId: recipientId,
+            actorId: socket.user.userId,
+            type: "message",
+            title: "New message",
+            message: cleanContent,
+            link: `/messages?conversation=${conversation.id}`,
+          });
           io.to(`conversation:${conversation.id}`).emit("new_message", message);
+          io.to(`user:${recipientId}`).emit("new_notification", notification);
           callback({ success: true, message });
         } catch {
           callback({ error: "Unable to send message" });

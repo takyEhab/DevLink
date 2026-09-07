@@ -52,8 +52,8 @@ const Profile = {
     const { query } = await import("../database/mongodb.js");
 
     const [result] = await query(
-      `INSERT INTO profiles (user_id, title, location, skills, bio, education, portfolio, github, linkedin)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO profiles (user_id, title, location, skills, bio, education, portfolio, github, linkedin, avatar)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         profileData.userId,
         profileData.title || null,
@@ -64,6 +64,7 @@ const Profile = {
         profileData.portfolio || null,
         profileData.github || null,
         profileData.linkedIn || null,
+        profileData.avatar || null,
       ],
     );
 
@@ -88,7 +89,7 @@ const Profile = {
 
     await query(
       `UPDATE profiles
-       SET title = ?, location = ?, skills = ?, bio = ?, education = ?, portfolio = ?, github = ?, linkedin = ?
+      SET title = ?, location = ?, skills = ?, bio = ?, education = ?, portfolio = ?, github = ?, linkedin = ?, avatar = COALESCE(?, avatar)
        WHERE user_id = ?`,
       [
         profileData.title || null,
@@ -99,6 +100,7 @@ const Profile = {
         profileData.portfolio || null,
         profileData.github || null,
         profileData.linkedIn || null,
+        profileData.avatar || null,
         userId,
       ],
     );

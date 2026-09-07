@@ -3,6 +3,12 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
 const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.COOKIE_SECURE === "true",
+  sameSite: process.env.COOKIE_SAME_SITE || "lax",
+  maxAge: 1000 * 60 * 60 * 24 * 7,
+};
 
 export const register = async (req, res, next) => {
   try {
@@ -39,12 +45,7 @@ export const register = async (req, res, next) => {
       },
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
+    res.cookie("token", token, cookieOptions);
 
     const { password: _password, ...safeUser } = newUser;
 
@@ -86,12 +87,7 @@ export const login = async (req, res, next) => {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
+    res.cookie("token", token, cookieOptions);
 
     const { password: _password, ...safeUser } = user;
 
@@ -119,11 +115,7 @@ export const getCurrentUser = async (req, res, next) => {
 };
 
 export const logout = async (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  res.clearCookie("token", cookieOptions);
 
   res.status(200).json({
     success: true,

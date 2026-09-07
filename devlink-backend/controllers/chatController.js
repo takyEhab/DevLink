@@ -1,4 +1,5 @@
 import Chat from "../models/chat.js";
+import Notification from "../models/notification.js";
 
 const getConversationId = (req) => Number(req.params.conversationId);
 
@@ -51,7 +52,6 @@ export const getMessages = async (req, res, next) => {
     next(error);
   }
 };
-
 export const sendMessage = async (req, res, next) => {
   try {
     const conversationId = getConversationId(req);
@@ -75,6 +75,14 @@ export const sendMessage = async (req, res, next) => {
       req.user.userId,
       content,
     );
+    await Notification.create({
+      userId: Chat.getOtherParticipant(conversation, req.user.userId),
+      actorId: req.user.userId,
+      type: "message",
+      title: "New message",
+      message: content,
+      link: `/messages?conversation=${conversationId}`,
+    });
     res.status(201).json({ success: true, data: { message } });
   } catch (error) {
     next(error);
