@@ -6,9 +6,6 @@ import { toast } from "react-toastify";
 import { UserContext } from "../context/UserContext";
 import api, { SOCKET_URL } from "../services/api";
 
-const mockAvatar = "s";
-// "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face";
-
 // Simple UI Components
 const Button = ({
   children,
