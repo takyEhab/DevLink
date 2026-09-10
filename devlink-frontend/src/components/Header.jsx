@@ -163,9 +163,9 @@ const Header = () => {
             <Link to="/">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">DC</span>
+                  <span className="text-white font-bold text-sm">DL</span>
                 </div>
-                <h1 className="text-2xl font-bold text-white">DevConnect</h1>
+                <h1 className="text-2xl font-bold text-white">DevLink</h1>
               </div>
             </Link>
 

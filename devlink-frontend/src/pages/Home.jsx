@@ -317,7 +317,7 @@ const Home = () => {
 
             <h1 className="text-6xl lg:text-8xl font-black mb-8">
               <span className="bg-gradient-to-r from-white via-indigo-100 to-purple-100 bg-clip-text text-transparent">
-                DevConnect
+                DevLink
               </span>
               <br />
               <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">

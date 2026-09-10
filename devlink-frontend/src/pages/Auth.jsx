@@ -540,7 +540,7 @@ const Signup = ({ onSwitchToLogin }) => {
               <User className="w-8 h-8 text-blue-400" />
             </div>
             <h1 className="text-2xl font-bold text-white">
-              {currentStep === 1 ? "Join DevConnect" : "Complete Your Profile"}
+              {currentStep === 1 ? "Join DevLink" : "Complete Your Profile"}
             </h1>
             <p className="text-gray-400 mt-2">
               {currentStep === 1
