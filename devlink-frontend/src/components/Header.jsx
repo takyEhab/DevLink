@@ -1,4 +1,4 @@
-import { Bell, Settings, User, LogOut, ChevronDown } from "lucide-react";
+import { Bell, Settings, User, LogOut, ChevronDown, UserRound } from "lucide-react";
 import { io } from "socket.io-client";
 import { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import { UserContext } from "../context/UserContext";
 import api, { SOCKET_URL } from "../services/api";
 
-const mockAvatar =
-  "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face";
+const mockAvatar = "s";
+// "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face";
 
 // Simple UI Components
 const Button = ({
@@ -265,14 +265,16 @@ const Header = () => {
                   onToggle={handleUserMenuToggle}
                   trigger={
                     <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-700/50 transition-colors">
-                      <img
-                        src={user.avatar || mockAvatar}
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full border-2 border-gray-600"
-                        onError={(event) => {
-                          event.currentTarget.src = mockAvatar;
-                        }}
-                      />
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full border-2 border-gray-600"
+                        />
+                      ) : (
+                        <UserRound className="w-5 h-5 text-emerald-300/70" />
+                      )}
+
                       <div className="hidden sm:block text-left">
                         <div className="text-sm font-medium text-white">
                           {user.name}
