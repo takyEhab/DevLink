@@ -15,6 +15,10 @@ import registerChatSocket from "./sockets/chatSocket.js";
 import notificationRouter from "./routes/notificationRoutes.js";
 
 const app = express();
+
+// Trust proxy to allow secure cookies to be set when behind a reverse proxy (like Vercel, Render, etc.)
+app.set("trust proxy", 1);
+
 const httpServer = createServer(app);
 const port = Number(process.env.PORT || 3000);
 const frontendOrigin = process.env.FRONTEND_URL || "https://dev-link-frontend-mu.vercel.app";

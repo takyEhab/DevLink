@@ -3,10 +3,12 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
 const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.COOKIE_SECURE === "true",
-  sameSite: process.env.COOKIE_SAME_SITE || "lax",
+  secure: process.env.COOKIE_SECURE === "true" || isProduction,
+  sameSite: process.env.COOKIE_SAME_SITE || (isProduction ? "none" : "lax"),
   maxAge: 1000 * 60 * 60 * 24 * 7,
 };
 
