@@ -2,6 +2,11 @@
 
 > A full-stack platform that connects developers, showcases their work, and makes it easier to discover and communicate with other developers.
 
+## Live Demo
+
+- 🌐 **App:** [https://dev-link-frontend-mu.vercel.app](https://dev-link-frontend-mu.vercel.app/)
+- 🔗 **API:** [https://dev-link-backend-opal.vercel.app](https://dev-link-backend-opal.vercel.app/)
+
 ## Overview
 
 **DevLink** is a full-stack web application designed as a developer networking and discovery platform.
@@ -12,52 +17,52 @@ The project was built to practice and demonstrate real-world full-stack developm
 
 ## Features
 
-* 🔐 User authentication and authorization
-* 👤 Developer profiles
-* 🛠️ Skills and technology management
-* 📁 Project showcase
-* 🔎 Developer discovery and search
-* 💬 Developer messaging
-* 🖼️ Profile and project images
-* 🔒 HTTP-only cookie authentication
-* 📱 Responsive user interface
-* 🌐 RESTful backend API
+- 🔐 User authentication and authorization
+- 👤 Developer profiles
+- 🛠️ Skills and technology management
+- 📁 Project showcase
+- 🔎 Developer discovery and search
+- 💬 Developer messaging
+- 🖼️ Profile and project images
+- 🔒 HTTP-only cookie authentication
+- 📱 Responsive user interface
+- 🌐 RESTful backend API
 
 ## Tech Stack
 
 ### Frontend
 
-* React
-* Vite
-* React Router
-* Context API
-* Tailwind CSS
-* Lucide React
-* React Toastify
+- React
+- Vite
+- React Router
+- Context API
+- Tailwind CSS
+- Lucide React
+- React Toastify
 
 ### Backend
 
-* Node.js
-* Express.js
-* REST API
-* JWT Authentication
-* HTTP-only Cookies
-* CORS
+- Node.js
+- Express.js
+- REST API
+- JWT Authentication
+- HTTP-only Cookies
+- CORS
 
 ### Database
 
-* MySQL
+- MySQL
 
 ### Development & Deployment
 
-* Git & GitHub
-* Vercel
-* Postman
-* Linux
+- Git & GitHub
+- Vercel
+- Postman
+- Linux
 
 ## Project Structure
 
-```text
+```
 DevLink/
 │
 ├── devlink-frontend/
@@ -86,27 +91,27 @@ DevLink/
 
 Make sure you have the following installed:
 
-* [Node.js](https://nodejs.org/)
-* MySQL
-* Git
+- [Node.js](https://nodejs.org/)
+- MySQL
+- Git
 
 ### 1. Clone the repository
 
-```bash
+```
 git clone https://github.com/takyEhab/DevLink.git
 cd DevLink
 ```
 
 ### 2. Setup the Backend
 
-```bash
+```
 cd devlink-backend
 npm install
 ```
 
 Create a `.env` file inside `devlink-backend`:
 
-```env
+```
 PORT=5000
 
 FRONTEND_URL=http://localhost:5173
@@ -121,13 +126,13 @@ JWT_SECRET=your_jwt_secret
 
 Start the backend:
 
-```bash
+```
 npm run dev
 ```
 
 The API will be available at:
 
-```text
+```
 http://localhost:5000
 ```
 
@@ -135,20 +140,20 @@ http://localhost:5000
 
 Open another terminal:
 
-```bash
+```
 cd devlink-frontend
 npm install
 ```
 
 Start the development server:
 
-```bash
+```
 npm run dev
 ```
 
 The frontend will normally be available at:
 
-```text
+```
 http://localhost:5173
 ```
 
@@ -174,7 +179,7 @@ The backend follows a RESTful architecture.
 
 Main API resources include:
 
-```text
+```
 /api/auth
 /api/users
 /api/profile
@@ -198,14 +203,14 @@ Run the frontend and backend separately during development.
 
 ### Frontend
 
-```bash
+```
 cd devlink-frontend
 npm run dev
 ```
 
 ### Backend
 
-```bash
+```
 cd devlink-backend
 npm run dev
 ```
@@ -218,7 +223,7 @@ The frontend and backend can be deployed as separate applications.
 
 Recommended structure:
 
-```text
+```
 DevLink
 │
 ├── Frontend → Vercel
@@ -230,7 +235,7 @@ For production, update the backend environment variables with the production dat
 
 Example:
 
-```env
+```
 FRONTEND_URL=https://your-production-frontend.vercel.app
 ```
 
@@ -238,7 +243,7 @@ FRONTEND_URL=https://your-production-frontend.vercel.app
 
 Add screenshots of the main application here once the UI is finalized.
 
-```text
+```
 Home
 Profile
 Developer Search
@@ -251,32 +256,32 @@ Authentication
 
 Some features that can be added as the project evolves:
 
-* [ ] Real-time messaging
-* [ ] Notifications
-* [ ] Advanced developer filtering
-* [ ] Project categories
-* [ ] Developer following system
-* [ ] Profile verification
-* [ ] Improved image management
-* [ ] Better mobile experience
-* [ ] Automated testing
-* [ ] CI/CD pipeline
+- [ ] Real-time messaging
+- [ ] Notifications
+- [ ] Advanced developer filtering
+- [ ] Project categories
+- [ ] Developer following system
+- [ ] Profile verification
+- [ ] Improved image management
+- [ ] Better mobile experience
+- [ ] Automated testing
+- [ ] CI/CD pipeline
 
 ## What I Learned
 
 Building DevLink provided practical experience with:
 
-* Designing and consuming REST APIs
-* Building a full-stack React application
-* Authentication and authorization
-* JWT and HTTP-only cookies
-* MySQL database design
-* Express.js backend architecture
-* CORS configuration
-* Frontend/backend communication
-* Environment variable management
-* Git and GitHub workflows
-* Application deployment
+- Designing and consuming REST APIs
+- Building a full-stack React application
+- Authentication and authorization
+- JWT and HTTP-only cookies
+- MySQL database design
+- Express.js backend architecture
+- CORS configuration
+- Frontend/backend communication
+- Environment variable management
+- Git and GitHub workflows
+- Application deployment
 
 ## Author
 
@@ -284,8 +289,8 @@ Building DevLink provided practical experience with:
 
 Full-Stack Developer
 
-* GitHub: [@takyEhab](https://github.com/takyEhab)
-* LinkedIn: [Taky Allah Ehab Gad](https://www.linkedin.com/in/taky-gad/)
+- GitHub: [@takyEhab](https://github.com/takyEhab)
+- LinkedIn: [Taky Allah Ehab Gad](https://www.linkedin.com/in/taky-gad/)
 
 ## License
 
