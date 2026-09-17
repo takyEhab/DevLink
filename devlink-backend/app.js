@@ -25,7 +25,11 @@ const port = Number(process.env.PORT || 3000);
 const frontendOrigin = "https://dev-link-frontend-mu.vercel.app";
 
 const io = new Server(httpServer, {
-  cors: { origin: frontendOrigin, credentials: true },
+  cors: {
+    origin: frontendOrigin,
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(
