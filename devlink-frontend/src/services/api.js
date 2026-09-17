@@ -1,11 +1,11 @@
 import axios from "axios";
 
 export const API_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:3000"
+  import.meta.env.VITE_API_URL || "https://dev-link-backend-opal.vercel.app"
 ).replace(/\/$/, "");
 
 export const SOCKET_URL = (
-  import.meta.env.VITE_SOCKET_URL || API_URL.replace(/\/api$/, "")
+  import.meta.env.VITE_SOCKET_URL || "https://dev-link-backend-opal.vercel.app"
 ).replace(/\/$/, "");
 
 const api = axios.create({

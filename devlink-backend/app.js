@@ -51,7 +51,7 @@ app.get("/", async (req, res) => {
   res.status(200).json({ message: "api root" });
 });
 
-app.get("/api/admin", authorizeAdmin, (req, res) => {
+app.get("/admin", authorizeAdmin, (req, res) => {
   res.send("Welcome, admin!");
 });
 
